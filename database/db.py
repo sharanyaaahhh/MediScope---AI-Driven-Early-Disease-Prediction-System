@@ -1,9 +1,10 @@
-﻿# db.py
+# db.py
 import os
 from sqlalchemy import create_engine, Table, Column, Integer, String, Float, MetaData, ForeignKey, select, inspect, text
 from sqlalchemy.sql import insert
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
+from utils.security import encrypt_data, decrypt_data
 
 # SQLite database setup (can be overridden via environment variable)
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///mediscope.db")
@@ -19,6 +20,14 @@ doctors = Table(
     Column("specialization", String, nullable=False),
     Column("email", String, unique=True, nullable=False),
     Column("password", String, nullable=False),
+    Column("is_verified", Integer, default=0), # Email verification
+    Column("is_professionally_verified", Integer, default=0), # Professional credential verification
+    Column("license_number", String),
+    Column("verification_token", String),
+    Column("reset_token", String),
+    Column("token_expiry", String),
+    Column("two_factor_secret", String),
+    Column("two_factor_enabled", Integer, default=1),
     Column("created_at", String, default=str(datetime.utcnow()))
 )
 
@@ -33,6 +42,13 @@ patients = Table(
     Column("medications", String),
     Column("email", String, unique=True, nullable=False),
     Column("password", String, nullable=False),
+    Column("is_verified", Integer, default=0),
+    Column("verification_token", String),
+    Column("reset_token", String),
+    Column("token_expiry", String),
+    Column("two_factor_secret", String),
+    Column("two_factor_enabled", Integer, default=1),
+    Column("medical_report_path", String),
     Column("registered_at", String, default=lambda: str(datetime.utcnow()))
 )
 
@@ -70,6 +86,18 @@ records = Table(
     Column("created_at", String)
 )
 
+# Audit logs table
+audit_logs = Table(
+    "audit_logs", metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("user_id", Integer), # Acting user
+    Column("role", String),    # Acting role
+    Column("action", String),  # e.g., 'VIEW_PATIENT_RECORDS'
+    Column("target_id", Integer), # Affected patient/record ID
+    Column("details", String), # Additional context
+    Column("timestamp", String, default=lambda: str(datetime.utcnow()))
+)
+
 # Create all tables (this does not alter existing tables; we migrate missing columns separately)
 metadata.create_all(engine)
 
@@ -77,28 +105,66 @@ metadata.create_all(engine)
 from sqlalchemy import text
 
 
-def _ensure_patient_records_columns():
-    """Ensure new columns exist in patient_records for newer schema versions."""
+def _ensure_schema_columns():
+    """Ensure all required columns exist for newer schema versions across all tables."""
     with engine.connect() as conn:
-        existing_columns = {
+        # Check patient_records
+        existing_pr_columns = {
             row[1] for row in conn.execute(text("PRAGMA table_info(patient_records)"))
         }
-
-        # SQLite does not support dropping columns; we only add missing ones.
-        if "news2_score" not in existing_columns:
+        if "news2_score" not in existing_pr_columns:
             conn.execute(text("ALTER TABLE patient_records ADD COLUMN news2_score INTEGER"))
-        if "created_at" not in existing_columns:
+        if "created_at" not in existing_pr_columns:
             conn.execute(text("ALTER TABLE patient_records ADD COLUMN created_at TEXT"))
+
+        # Check doctors and patients for verification fields
+        for table_name in ["doctors", "patients"]:
+            existing_cols = {
+                row[1] for row in conn.execute(text(f"PRAGMA table_info({table_name})"))
+            }
+            if "is_verified" not in existing_cols:
+                conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN is_verified INTEGER DEFAULT 0"))
+            if "verification_token" not in existing_cols:
+                conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN verification_token TEXT"))
+            if "reset_token" not in existing_cols:
+                conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN reset_token TEXT"))
+            if "token_expiry" not in existing_cols:
+                conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN token_expiry TEXT"))
+            if "two_factor_secret" not in existing_cols:
+                conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN two_factor_secret TEXT"))
+            if "two_factor_enabled" not in existing_cols:
+                conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN two_factor_enabled INTEGER DEFAULT 0"))
+            
+            # Additional columns for patients specifically
+            if table_name == "patients":
+                if "medical_report_path" not in existing_cols:
+                    conn.execute(text("ALTER TABLE patients ADD COLUMN medical_report_path TEXT"))
+
+            # Additional columns for doctors specifically
+            if table_name == "doctors":
+                if "is_professionally_verified" not in existing_cols:
+                    conn.execute(text("ALTER TABLE doctors ADD COLUMN is_professionally_verified INTEGER DEFAULT 0"))
+                if "license_number" not in existing_cols:
+                    conn.execute(text("ALTER TABLE doctors ADD COLUMN license_number TEXT"))
+            
+            # FORCE 2FA for all existing users (Mandatory Policy)
+            conn.execute(text(f"UPDATE {table_name} SET two_factor_enabled = 1 WHERE two_factor_enabled = 0 OR two_factor_enabled IS NULL"))
+
+        # Check for audit_logs table (create if it doesn't exist)
+        try:
+            conn.execute(text("SELECT 1 FROM audit_logs LIMIT 1"))
+        except Exception:
+            audit_logs.create(engine)
 
 
 # Run migration once at module import time
 try:
-    _ensure_patient_records_columns()
+    _ensure_schema_columns()
 except Exception as e:
     # If migration fails (e.g., table not created yet), ignore and let create_all handle it.
     pass
 
-def register_doctor(name, age, specialization, email, password):
+def register_doctor(name, age, specialization, email, password, license_number=None, verification_token=None):
 
     with engine.connect() as conn:
 
@@ -108,7 +174,7 @@ def register_doctor(name, age, specialization, email, password):
         ).fetchone()
 
         if existing:
-            return {"error": "Doctor already exists"}
+            return {"error": "This email address is already registered. Please use a different email or log in."}
 
         stmt = insert(doctors).values(
             name=name,
@@ -116,6 +182,11 @@ def register_doctor(name, age, specialization, email, password):
             specialization=specialization,
             email=email,
             password=generate_password_hash(password),
+            license_number=license_number,
+            is_verified=0,
+            is_professionally_verified=0,
+            verification_token=verification_token,
+            two_factor_enabled=1,
             created_at=str(datetime.utcnow())
         )
 
@@ -124,7 +195,7 @@ def register_doctor(name, age, specialization, email, password):
 
         return {"message": "Doctor registered successfully"}
 
-def register_patient(name, age, gender, email, password, family_history, medications):
+def register_patient(name, age, gender, email, password, family_history, medications, verification_token=None, medical_report_path=None):
 
     with engine.connect() as conn:
 
@@ -133,7 +204,7 @@ def register_patient(name, age, gender, email, password, family_history, medicat
         ).fetchone()
 
         if existing:
-            raise Exception("Patient already exists")
+            raise Exception("This email address is already registered. Please use a different email or log in.")
 
         stmt = insert(patients).values(
             name=name,
@@ -141,8 +212,12 @@ def register_patient(name, age, gender, email, password, family_history, medicat
             gender=gender,
             email=email,
             password=generate_password_hash(password),
-            family_history=family_history,
-            medications=medications,
+            family_history=encrypt_data(family_history),
+            medications=encrypt_data(medications),
+            is_verified=0,
+            verification_token=verification_token,
+            two_factor_enabled=1,
+            medical_report_path=medical_report_path,
             registered_at=str(datetime.utcnow())
         )
 
@@ -172,10 +247,14 @@ def login_user(email, password, role):
         ).fetchone()
 
         if not user:
-            return {"error": "Invalid credentials"}
+            return {"error": "EMAIL_NOT_FOUND"}
 
         if not check_password_hash(user.password, password):
             return {"error": "Invalid credentials"}
+
+        # Check verification status
+        if getattr(user, "is_verified", None) == 0:
+            return {"error": "VERIFICATION_REQUIRED"}
 
         return {"user_id": user.id}
 
@@ -352,6 +431,11 @@ def get_patients_with_latest_record():
 
     return results
 
+def get_patients_with_latest_record_audited(user_id, role):
+    """Audited version of get_patients_with_latest_record."""
+    log_audit_action(user_id, role, "VIEW_ALL_PATIENTS", details="Doctor accessed clinical overview")
+    return get_patients_with_latest_record()
+
 
 def get_patient_by_id(patient_id):
     """Return patient metadata by patient ID."""
@@ -366,8 +450,8 @@ def get_patient_by_id(patient_id):
         "name": row.name,
         "age": row.age,
         "gender": row.gender,
-        "family_history": row.family_history,
-        "medications": row.medications,
+        "family_history": decrypt_data(row.family_history),
+        "medications": decrypt_data(row.medications),
         "email": row.email,
         "registered_at": row.registered_at,
     }
@@ -443,5 +527,92 @@ def get_doctor_by_id(doctor_id):
         "age": row.age,
         "specialization": row.specialization,
         "email": row.email,
+        "is_verified": getattr(row, "is_verified", None),
         "created_at": row.created_at,
     }
+
+def verify_email_in_db(token, role):
+    """Mark a user as verified based on the verification token."""
+    table = doctors if role == "doctor" else patients
+    with engine.connect() as conn:
+        user = conn.execute(
+            select(table).where(table.c.verification_token == token)
+        ).fetchone()
+        
+        if not user:
+            return False
+            
+        conn.execute(
+            table.update().where(table.c.id == user.id).values(
+                is_verified=1,
+                verification_token=None
+            )
+        )
+        conn.commit()
+        return True
+
+def set_user_reset_token(email, role, token, expiry):
+    """Store a password reset token and its expiry for a user."""
+    table = doctors if role == "doctor" else patients
+    with engine.connect() as conn:
+        user = conn.execute(
+            select(table).where(table.c.email == email)
+        ).fetchone()
+        
+        if not user:
+            return False
+            
+        conn.execute(
+            table.update().where(table.c.id == user.id).values(
+                reset_token=token,
+                token_expiry=expiry
+            )
+        )
+        conn.commit()
+        return True
+
+def get_user_by_reset_token(token, role):
+    """Retrieve a user by their reset token."""
+    table = doctors if role == "doctor" else patients
+    with engine.connect() as conn:
+        return conn.execute(
+            select(table).where(table.c.reset_token == token)
+        ).fetchone()
+
+def update_user_password(user_id, role, new_password_hash):
+    """Update user password and clear reset tokens."""
+    table = doctors if role == "doctor" else patients
+    with engine.connect() as conn:
+        conn.execute(
+            table.update().where(table.c.id == user_id).values(
+                password=new_password_hash,
+                reset_token=None,
+                token_expiry=None
+            )
+        )
+        conn.commit()
+        return True
+
+def log_audit_action(user_id, role, action, target_id=None, details=None):
+    """Log a security or sensitive action to the audit_logs table."""
+    with engine.connect() as conn:
+        stmt = insert(audit_logs).values(
+            user_id=user_id,
+            role=role,
+            action=action,
+            target_id=target_id,
+            details=details,
+            timestamp=str(datetime.utcnow())
+        )
+        conn.execute(stmt)
+        conn.commit()
+
+
+def get_all_doctors():
+    """Return a list of all verified doctors (name + email) for emergency broadcast alerts."""
+    with engine.connect() as conn:
+        rows = conn.execute(
+            select(doctors.c.id, doctors.c.name, doctors.c.email)
+            .where(doctors.c.is_verified == 1)
+        ).fetchall()
+    return [{"id": row.id, "name": row.name, "email": row.email} for row in rows]

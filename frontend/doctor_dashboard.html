@@ -12,7 +12,46 @@
   <style>
     * {
       font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
     }
+    
+    /* Dark Mode Defaults */
+    html.dark {
+      background-color: #0f172a;
+      color: #f1f5f9;
+    }
+    
+    html.dark .glass-card {
+      background: rgba(30, 41, 59, 0.8);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    html.dark .analytics-card {
+      background: rgba(15, 23, 42, 0.6);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    html.dark .form-input, html.dark .search-box {
+      background: rgba(15, 23, 42, 0.8);
+      color: #f1f5f9;
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    html.dark .bg-slate-50, html.dark .bg-slate-100 { background: rgba(15, 23, 42, 0.5); }
+    html.dark .text-slate-800 { color: #f1f5f9; }
+    html.dark .text-slate-600 { color: #94a3b8; }
+    html.dark .data-table { background: rgba(30, 41, 59, 0.8); }
+    html.dark .data-table tbody td { color: #cbd5e1; border-color: rgba(255, 255, 255, 0.05); }
+
+    .settings-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+    }
+    .settings-modal.show { display: flex; align-items: center; justify-content: center; }
     
     @keyframes float {
       0%, 100% { transform: translateY(0px); }
@@ -576,8 +615,37 @@
           </svg>
           <input type="text" id="search-input" class="search-box w-full pl-10" placeholder="Search patient by name or ID...">
         </div>
-        <button id="logout-btn" class="btn-login px-4 py-2 rounded-lg text-white text-sm font-semibold whitespace-nowrap">Logout</button>
+        <div class="flex items-center gap-2">
+          <button id="settings-btn" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 border border-slate-200 transition-all">
+            <svg class="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+          </button>
+          <button id="logout-btn" class="btn-login px-4 py-2 rounded-lg text-white text-sm font-semibold whitespace-nowrap">Logout</button>
+        </div>
        </div>
+      </div>
+
+      <!-- Settings Modal -->
+      <div id="settings-modal" class="settings-modal">
+        <div class="glass-card rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold text-slate-800">Professional Preferences</h3>
+            <button onclick="closeSettings()" class="text-slate-400 hover:text-slate-600"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg></button>
+          </div>
+          <div class="space-y-6 text-slate-800">
+            <div class="flex items-center justify-between">
+              <div><span class="font-semibold block">Night Mode</span><span class="text-xs text-slate-500">Optimized for night shifts</span></div>
+              <button id="dark-mode-toggle" class="w-12 h-6 rounded-full bg-slate-200 relative transition-colors"><div class="dot absolute left-1 top-1 w-4 h-4 rounded-full bg-white transition-transform"></div></button>
+            </div>
+            <div class="flex items-center justify-between">
+              <div><span class="font-semibold block">Two-Factor Auth</span><span class="text-xs text-slate-500">Mandatory for HIPAA compliance</span></div>
+              <span class="px-3 py-1 bg-sky-500/10 text-sky-600 text-[10px] font-bold rounded-full border border-sky-200">ACTIVE (MANDATORY)</span>
+            </div>
+            <div>
+              <span class="font-semibold block mb-2">Interface Language</span>
+              <select id="lang-select" class="form-input rounded-lg w-full"><option value="en">English (US)</option><option value="es">Español</option><option value="fr">Français</option></select>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Urgent Action Banner -->
@@ -787,7 +855,44 @@
     </div>
    </div>
   </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
   <script>
+    // SocketIO Client Setup (Phase 3)
+    const socket = io();
+    socket.on('critical_alert', (data) => {
+        // Instant Real-time Alert
+        addRealTimeAlert(data);
+        showCriticalNotification(data.patient_name);
+    });
+
+    function addRealTimeAlert(data) {
+        const tableBody = document.getElementById('alerts-table-body');
+        const emptyState = tableBody.querySelector('.empty-state');
+        if (emptyState) emptyState.remove();
+        
+        const row = document.createElement('tr');
+        row.className = 'animate-pulse bg-red-50 text-red-700 font-bold';
+        row.innerHTML = `
+            <td class="py-3 px-4 italic">Just Now</td>
+            <td class="py-3 px-4">${data.patient_name}</td>
+            <td class="py-3 px-4"><span class="status-badge status-high">CRITICAL</span></td>
+            <td class="py-3 px-4">NEWS2 Score: ${data.news2} - Urgent response required</td>
+        `;
+        tableBody.prepend(row);
+        document.getElementById('alerts-subtitle').textContent = "Piority alerts active";
+    }
+
+    function showCriticalNotification(name) {
+        if (!("Notification" in window)) return;
+        if (Notification.permission === "granted") {
+            new Notification(`🚨 CRITICAL ALERT: ${name}`, {
+                body: "Patient requires immediate attention.",
+                icon: "/favicon.ico"
+            });
+        } else if (Notification.permission !== "denied") {
+            Notification.requestPermission();
+        }
+    }
     const defaultConfig = {
       dashboard_title: "Doctor Dashboard",
       dashboard_subtitle: "Patient Management & Analytics",
@@ -1308,6 +1413,55 @@ function viewReport(patientId) {
       
       // Auto-refresh every 30 seconds
       setInterval(refreshData, 30000);
+      
+      // Settings Modal Logic
+      const settingsBtn = document.getElementById('settings-btn');
+      const settingsModal = document.getElementById('settings-modal');
+      const darkModeToggle = document.getElementById('dark-mode-toggle');
+      const tfaToggle = document.getElementById('2fa-toggle');
+
+      if (settingsBtn) {
+        settingsBtn.onclick = () => settingsModal.classList.add('show');
+      }
+
+      // Dark Mode Persistence
+      if (localStorage.getItem('theme') === 'dark') {
+          document.documentElement.classList.add('dark');
+          darkModeToggle?.querySelector('.dot').classList.add('translate-x-6');
+          darkModeToggle?.classList.add('bg-sky-500');
+      }
+
+      darkModeToggle.onclick = () => {
+          const isDark = document.documentElement.classList.toggle('dark');
+          localStorage.setItem('theme', isDark ? 'dark' : 'light');
+          darkModeToggle.querySelector('.dot').classList.toggle('translate-x-6', isDark);
+          darkModeToggle.classList.toggle('bg-sky-500', isDark);
+      }
+
+      // 2FA Toggle Logic
+      tfaToggle.onclick = async () => {
+          const currentlyEnabled = tfaToggle.classList.contains('bg-sky-500');
+          const newState = !currentlyEnabled;
+          
+          try {
+              const response = await fetch('/toggle-2fa', {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify({enabled: newState}),
+                  credentials: 'include'
+              });
+              if (response.ok) {
+                  tfaToggle.classList.toggle('bg-sky-500', newState);
+                  tfaToggle.querySelector('.dot').classList.toggle('translate-x-6', newState);
+              }
+          } catch (err) {
+              console.error("2FA Toggle failed", err);
+          }
+      };
     });
+
+    function closeSettings() {
+      document.getElementById('settings-modal').classList.remove('show');
+    }
   </script>
 </html>

@@ -221,7 +221,7 @@
       </div><!-- Messages -->
       <div id="error-msg" class="error-message mb-4"></div>
       <div id="success-msg" class="success-message mb-4"></div><!-- Registration Form -->
-      <form id="registration-form" class="space-y-5">
+      <form id="registration-form" class="space-y-5" enctype="multipart/form-data">
        <!-- Name Field -->
        <div class="animate-slide-up delay-200"><label for="name" class="block text-sm font-semibold text-slate-700 mb-2.5">Full Name</label> <input type="text" id="name" name="name" placeholder="John Smith" class="form-input w-full px-4 py-3 rounded-xl" required>
        </div><!-- Age and Gender -->
@@ -237,9 +237,45 @@
        </div><!-- Confirm Password Field -->
        <div class="animate-slide-up delay-400"><label for="confirm-password" class="block text-sm font-semibold text-slate-700 mb-2.5">Confirm Password</label> <input type="password" id="confirm-password" name="confirm-password" placeholder="••••••••" class="form-input w-full px-4 py-3 rounded-xl" required>
        </div><!-- Family History -->
-       <div class="animate-slide-up delay-400"><label for="family-history" class="block text-sm font-semibold text-slate-700 mb-2.5">Family Medical History</label> <textarea id="family-history" name="family-history" placeholder="List any hereditary conditions (e.g., diabetes, heart disease)" class="form-input w-full px-4 py-3 rounded-xl h-20 resize-none" required></textarea>
+       <div class="animate-slide-up delay-400">
+         <label for="family-history" class="block text-sm font-semibold text-slate-700 mb-2.5">Medical History</label>
+         <select id="family-history" name="family-history" class="form-input w-full px-4 py-3 rounded-xl" required>
+           <option value="">Select your primary condition</option>
+           <option value="none">None / No Significant History</option>
+           <option value="hypertension">Hypertension (High Blood Pressure)</option>
+           <option value="hypotension">Hypotension (Low Blood Pressure)</option>
+           <option value="asthma">Asthma</option>
+           <option value="copd">COPD (Chronic Obstructive Pulmonary Disease)</option>
+           <option value="arrhythmia">Arrhythmia (Irregular Heartbeat)</option>
+           <option value="diabetes">Diabetes</option>
+           <option value="cad">Coronary Artery Disease</option>
+         </select>
        </div><!-- Current Medications -->
-       <div class="animate-slide-up delay-400"><label for="medications" class="block text-sm font-semibold text-slate-700 mb-2.5">Current Medications</label> <textarea id="medications" name="medications" placeholder="List medications you're currently taking" class="form-input w-full px-4 py-3 rounded-xl h-20 resize-none" required></textarea>
+       <div class="animate-slide-up delay-400">
+         <label for="medications" class="block text-sm font-semibold text-slate-700 mb-2.5">Current Medications</label>
+         <select id="medications" name="medications" class="form-input w-full px-4 py-3 rounded-xl" required>
+           <option value="">Select your primary medication type</option>
+           <option value="none">None</option>
+           <option value="bp_meds">Blood Pressure Medications (e.g. Amlodipine, Lisinopril)</option>
+           <option value="heart_meds">Heart Meds (e.g. Metoprolol, Digoxin)</option>
+           <option value="inhalers">Inhalers / Breathing Meds (e.g. Salbutamol)</option>
+           <option value="diabetes_meds">Diabetes Medications (Metformin / Insulin)</option>
+           <option value="other">Other</option>
+         </select>
+       </div><!-- Medical Report Upload -->
+       <div class="animate-slide-up delay-400">
+         <label for="medical-report" class="block text-sm font-semibold text-slate-700 mb-2.5">Previous Medical Report (PDF/Image)</label>
+         <div class="relative group">
+           <input type="file" id="medical-report" name="medical_report" accept=".pdf,image/*" 
+             onchange="document.getElementById('file-name-display').textContent = this.files[0]?.name || 'Choose a file...'"
+             class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+           <div class="form-input w-full px-4 py-3 rounded-xl flex items-center justify-between group-hover:border-sky-400 transition-colors">
+             <span id="file-name-display" class="text-slate-500 truncate">Choose a file...</span>
+             <svg class="w-5 h-5 text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+             </svg>
+           </div>
+         </div>
        </div><!-- Privacy Consent -->
        <div class="flex items-start gap-3 pt-2 animate-slide-up delay-400"><label class="flex items-start gap-3 cursor-pointer"> <input type="checkbox" name="privacy" class="w-4 h-4 accent-sky-500 mt-1"> <span class="text-sm text-slate-600 font-medium">I consent to MediScope storing my health information according to HIPAA regulations</span> </label>
        </div><!-- Register Button --> <button type="submit" class="btn-login w-full text-white font-semibold py-3 rounded-xl mt-6 transition-all duration-300 animate-slide-up delay-400 flex items-center justify-center gap-2"> <span id="btn-text">Create Patient Account</span> </button>
@@ -470,22 +506,27 @@
       spinner.className = 'loading-spinner';
       btnText.appendChild(spinner);
       
+      // Use FormData for file upload
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('age', age);
+      formData.append('gender', gender);
+      formData.append('email', email);
+      formData.append('password', password);
+      formData.append('family_history', familyHistory);
+      formData.append('medications', medications);
+      
+      const fileInput = document.getElementById('medical-report');
+      if (fileInput.files.length > 0) {
+        formData.append('medical_report', fileInput.files[0]);
+      }
+
       try {
         const response = await fetch("/patient-register", {
           method: "POST",
           credentials: "include",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            name,
-            age,
-            gender,
-            email,
-            password,
-            family_history: familyHistory,
-            medications
-          })
+          // Don't set Content-Type header when using FormData - the browser adds it automatically with the boundary
+          body: formData
         });
 
         const result = await response.json();
@@ -496,11 +537,11 @@
           return;
         }
 
-        showSuccess("Patient account created successfully! Redirecting...", successMsg);
+        showSuccess(result.message || "Patient account created! Please check your email to verify your account.", successMsg);
 
         setTimeout(() => {
-          window.location.href = "/login?role=patient";
-        }, 2000);
+          window.location.href = "/login?role=patient&status=success&message=" + encodeURIComponent("Please verify your email to log in.");
+        }, 4000);
         
       } catch (error) {
         showError('Registration failed. Please try again.', errorMsg);
