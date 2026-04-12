@@ -73,8 +73,12 @@ def is_valid_email(email):
 # LOAD ML MODEL
 # ==============================
 
-model = joblib.load("models/disease_predictor.pkl")
-scaler = joblib.load("models/scaler.pkl")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+model_path = os.path.join(BASE_DIR, "models", "disease_predictor.pkl")
+scaler_path = os.path.join(BASE_DIR, "models", "scaler.pkl")
+
+model = joblib.load(model_path)
+scaler = joblib.load(scaler_path)
 
 # ==============================
 # FRONTEND ROUTES
