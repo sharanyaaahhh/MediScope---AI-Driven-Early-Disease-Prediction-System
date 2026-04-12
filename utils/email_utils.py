@@ -15,9 +15,10 @@ def _send_email_logic(msg):
     smtp_user = os.environ.get("SMTP_USER")
     smtp_password = os.environ.get("SMTP_PASSWORD")
     
+    import sys
     if not smtp_user or not smtp_password:
-        print("[EMAIL ERROR] SMTP credentials not set. Email not sent.")
-        print(f"[EMAIL PREVIEW] To: {msg['To']}\nSubject: {msg['Subject']}\nBody: {msg.get_payload()[0].get_payload()}")
+        print("[EMAIL ERROR] SMTP credentials not set. Email not sent.", flush=True)
+        print(f"[EMAIL PREVIEW] To: {msg['To']}\nSubject: {msg['Subject']}", flush=True)
         return
 
     try:
@@ -26,9 +27,9 @@ def _send_email_logic(msg):
         server.login(smtp_user, smtp_password)
         server.send_message(msg)
         server.quit()
-        print(f"[EMAIL SUCCESS] Email sent to {msg['To']}")
+        print(f"[EMAIL SUCCESS] Email sent to {msg['To']}", flush=True)
     except Exception as e:
-        print(f"[EMAIL ERROR] Failed to send email: {e}")
+        print(f"[EMAIL ERROR] Failed to send email: {e}", flush=True)
 
 def send_email(subject, recipient, body_html, app=None):
     sender = os.environ.get("SMTP_USER", "noreply@mediscope.com")
@@ -41,11 +42,9 @@ def send_email(subject, recipient, body_html, app=None):
     html_part = MIMEText(body_html, "html")
     msg.attach(html_part)
     
-    if app:
-        # Send in background thread to not block the main request
-        Thread(target=send_async_email, args=(app, msg)).start()
-    else:
-        _send_email_logic(msg)
+    # Temporarily force synchronous email to debug Render issues
+    print(f"[EMAIL INITIATED] Attempting to send email to {recipient} synchronously", flush=True)
+    _send_email_logic(msg)
 
 def get_verification_email_body(name, verification_link):
     return f"""
