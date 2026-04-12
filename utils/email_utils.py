@@ -9,11 +9,13 @@ def send_async_email(app, msg_data):
         _send_email_logic(msg_data)
 
 def _send_email_logic(msg_data):
-    api_key = os.environ.get("RESEND_API_KEY", "re_FGfBUhHy_9fwKsrz1wXr2Vu9LtTrrQMgE")
+    # Brevo API Key
+    api_key = os.environ.get("BREVO_API_KEY")
     
-    url = "https://api.resend.com/emails"
+    url = "https://api.brevo.com/v3/smtp/email"
     headers = {
-        "Authorization": f"Bearer {api_key}",
+        "api-key": api_key,
+        "Accept": "application/json",
         "Content-Type": "application/json"
     }
     
@@ -22,24 +24,31 @@ def _send_email_logic(msg_data):
     try:
         with urllib.request.urlopen(req) as response:
             res_data = response.read()
-            print(f"[EMAIL SUCCESS] Email sent to {msg_data['to']}", flush=True)
+            print(f"[EMAIL SUCCESS] Email sent to {msg_data['to'][0]['email']}", flush=True)
     except Exception as e:
-        print(f"[EMAIL ERROR] Failed to send email via Resend: {e}", flush=True)
+        print(f"[EMAIL ERROR] Failed to send email via Brevo: {e}", flush=True)
         if hasattr(e, 'read'):
             print(f"[EMAIL ERROR DETAILS] {e.read().decode()}", flush=True)
 
 def send_email(subject, recipient, body_html, app=None):
-    # Resend requires you to use their onboarding email address if you don't have a verified domain
-    sender = "onboarding@resend.dev"
+    # The email address you verified inside Brevo
+    sender_email = os.environ.get("BREVO_SENDER_EMAIL", "chakrabartisharanya@gmail.com")
     
     msg_data = {
-        "from": f"MediScope <{sender}>",
-        "to": [recipient],
+        "sender": {
+            "name": "MediScope",
+            "email": sender_email
+        },
+        "to": [
+            {
+                "email": recipient
+            }
+        ],
         "subject": subject,
-        "html": body_html
+        "htmlContent": body_html
     }
     
-    print(f"[EMAIL INITIATED] Queuing email to {recipient} asynchronously via Resend", flush=True)
+    print(f"[EMAIL INITIATED] Queuing email to {recipient} asynchronously via Brevo", flush=True)
     if app:
         Thread(target=send_async_email, args=(app, msg_data)).start()
     else:
