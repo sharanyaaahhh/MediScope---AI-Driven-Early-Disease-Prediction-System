@@ -1,56 +1,49 @@
-import smtplib
 import os
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import json
+import urllib.request
 from threading import Thread
 from email_validator import validate_email, EmailNotValidError
 
-def send_async_email(app, msg):
+def send_async_email(app, msg_data):
     with app.app_context():
-        _send_email_logic(msg)
+        _send_email_logic(msg_data)
 
-def _send_email_logic(msg):
-    smtp_server = os.environ.get("SMTP_SERVER", "smtp.gmail.com")
-    smtp_port = int(os.environ.get("SMTP_PORT", 465))
-    smtp_user = os.environ.get("SMTP_USER")
-    smtp_password = os.environ.get("SMTP_PASSWORD")
+def _send_email_logic(msg_data):
+    api_key = os.environ.get("RESEND_API_KEY", "re_FGfBUhHy_9fwKsrz1wXr2Vu9LtTrrQMgE")
     
-    import sys
-    if not smtp_user or not smtp_password:
-        print("[EMAIL ERROR] SMTP credentials not set. Email not sent.", flush=True)
-        print(f"[EMAIL PREVIEW] To: {msg['To']}\nSubject: {msg['Subject']}", flush=True)
-        return
-
+    url = "https://api.resend.com/emails"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    
+    req = urllib.request.Request(url, data=json.dumps(msg_data).encode("utf-8"), headers=headers, method="POST")
+    
     try:
-        if smtp_port == 465:
-            server = smtplib.SMTP_SSL(smtp_server, smtp_port)
-        else:
-            server = smtplib.SMTP(smtp_server, smtp_port)
-            server.starttls()
-            
-        server.login(smtp_user, smtp_password)
-        server.send_message(msg)
-        server.quit()
-        print(f"[EMAIL SUCCESS] Email sent to {msg['To']}", flush=True)
+        with urllib.request.urlopen(req) as response:
+            res_data = response.read()
+            print(f"[EMAIL SUCCESS] Email sent to {msg_data['to']}", flush=True)
     except Exception as e:
-        print(f"[EMAIL ERROR] Failed to send email: {e}", flush=True)
+        print(f"[EMAIL ERROR] Failed to send email via Resend: {e}", flush=True)
+        if hasattr(e, 'read'):
+            print(f"[EMAIL ERROR DETAILS] {e.read().decode()}", flush=True)
 
 def send_email(subject, recipient, body_html, app=None):
-    sender = os.environ.get("SMTP_USER", "noreply@mediscope.com")
+    # Resend requires you to use their onboarding email address if you don't have a verified domain
+    sender = "onboarding@resend.dev"
     
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"] = f"MediScope <{sender}>"
-    msg["To"] = recipient
+    msg_data = {
+        "from": f"MediScope <{sender}>",
+        "to": [recipient],
+        "subject": subject,
+        "html": body_html
+    }
     
-    html_part = MIMEText(body_html, "html")
-    msg.attach(html_part)
-    
-    print(f"[EMAIL INITIATED] Queuing email to {recipient} asynchronously", flush=True)
+    print(f"[EMAIL INITIATED] Queuing email to {recipient} asynchronously via Resend", flush=True)
     if app:
-        Thread(target=send_async_email, args=(app, msg)).start()
+        Thread(target=send_async_email, args=(app, msg_data)).start()
     else:
-        Thread(target=_send_email_logic, args=(msg,)).start()
+        Thread(target=_send_email_logic, args=(msg_data,)).start()
 
 def get_verification_email_body(name, verification_link):
     return f"""
