@@ -46,9 +46,11 @@ def send_email(subject, recipient, body_html, app=None):
     html_part = MIMEText(body_html, "html")
     msg.attach(html_part)
     
-    # Temporarily force synchronous email to debug Render issues
-    print(f"[EMAIL INITIATED] Attempting to send email to {recipient} synchronously", flush=True)
-    _send_email_logic(msg)
+    print(f"[EMAIL INITIATED] Queuing email to {recipient} asynchronously", flush=True)
+    if app:
+        Thread(target=send_async_email, args=(app, msg)).start()
+    else:
+        Thread(target=_send_email_logic, args=(msg,)).start()
 
 def get_verification_email_body(name, verification_link):
     return f"""
