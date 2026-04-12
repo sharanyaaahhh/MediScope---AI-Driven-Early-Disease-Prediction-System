@@ -1,0 +1,1273 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediScope - Health Monitoring Dashboard</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-15px); }
+    }
+    
+    @keyframes glow-pulse {
+      0%, 100% { box-shadow: 0 0 20px rgba(14, 165, 233, 0.3); }
+      50% { box-shadow: 0 0 40px rgba(14, 165, 233, 0.5); }
+    }
+    
+    @keyframes slide-down {
+      0% { opacity: 0; transform: translateY(-20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slide-up {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes fade-in {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    
+    .animate-float {
+      animation: float 5s ease-in-out infinite;
+    }
+    
+    .animate-glow-pulse {
+      animation: glow-pulse 3s ease-in-out infinite;
+    }
+    
+    .animate-slide-down {
+      animation: slide-down 0.6s ease-out forwards;
+    }
+    
+    .animate-slide-up {
+      animation: slide-up 0.6s ease-out forwards;
+    }
+    
+    .animate-fade-in {
+      animation: fade-in 0.8s ease-out forwards;
+    }
+    
+    .delay-100 { animation-delay: 0.1s; }
+    .delay-200 { animation-delay: 0.2s; }
+    .delay-300 { animation-delay: 0.3s; }
+    .delay-400 { animation-delay: 0.4s; }
+    
+    .gradient-text {
+      background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+    }
+    
+    .medical-grid {
+      background-image: 
+        linear-gradient(rgba(14, 165, 233, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(14, 165, 233, 0.05) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    
+    .form-input {
+      width: 100%;
+      min-width: 0;
+      background: rgba(248, 250, 252, 0.8);
+      border: 2px solid rgba(14, 165, 233, 0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: #0ea5e9;
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+      background: rgba(248, 250, 252, 1);
+    }
+    
+    .form-input::placeholder {
+      color: #94a3b8;
+    }
+    
+    .btn-login {
+      background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+      box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);
+      transition: all 0.3s ease;
+    }
+    
+    .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(14, 165, 233, 0.5);
+    }
+    
+    .btn-login:active {
+      transform: translateY(0);
+    }
+    
+    .btn-login:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    
+    .link-register {
+      color: #0ea5e9;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      border-bottom: 2px solid transparent;
+    }
+    
+    .link-register:hover {
+      border-bottom-color: #0ea5e9;
+      color: #0284c7;
+    }
+    
+    .floating-element {
+      position: absolute;
+      opacity: 0.1;
+    }
+    
+    .error-message {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #dc2626;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      display: none;
+    }
+    
+    .error-message.show {
+      display: block;
+      animation: slide-up 0.3s ease-out;
+    }
+    
+    .success-message {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #16a34a;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      display: none;
+    }
+    
+    .success-message.show {
+      display: block;
+      animation: slide-up 0.3s ease-out;
+    }
+    
+    .loading-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .vitals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+    }
+    
+    .vitals-card {
+      background: rgba(248, 250, 252, 0.8);
+      border: 2px solid rgba(14, 165, 233, 0.1);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    
+    .vitals-card:hover {
+      border-color: rgba(14, 165, 233, 0.3);
+      transform: translateY(-2px);
+    }
+    
+    .vitals-card input {
+      width: 100%;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+    }
+    
+    .risk-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .risk-low {
+      background: rgba(34, 197, 94, 0.15);
+      color: #16a34a;
+    }
+    
+    .risk-moderate {
+      background: rgba(251, 146, 60, 0.15);
+      color: #ea580c;
+    }
+    
+    .risk-high {
+      background: rgba(239, 68, 68, 0.15);
+      color: #dc2626;
+    }
+    
+    .result-card {
+      background: rgba(248, 250, 252, 0.95);
+      border: 2px solid rgba(14, 165, 233, 0.15);
+      border-radius: 16px;
+      padding: 24px;
+      margin-top: 24px;
+    }
+    
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(14, 165, 233, 0.1);
+    }
+    
+    .result-row:last-child {
+      border-bottom: none;
+    }
+    
+    .result-label {
+      font-weight: 600;
+      color: #475569;
+      font-size: 14px;
+    }
+    
+    .result-value {
+      font-weight: 700;
+      color: #0ea5e9;
+      font-size: 16px;
+    }
+    
+    .confidence-bar {
+      width: 100%;
+      height: 6px;
+      background: rgba(14, 165, 233, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    
+    .confidence-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #0ea5e9 0%, #0284c7 100%);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      overflow-y: auto;
+      max-height: 300px;
+      min-height: 100px;
+      border-radius: 12px;
+      border: 1px solid rgba(14, 165, 233, 0.1);
+    }
+    .history-card {
+      margin: 10px 0;
+      padding: 12px;
+      border-radius: 6px;
+      background: #f9f9f9;
+      border: 1px solid #e2e8f0;
+    }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+ </head>
+ <body class="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-teal-50">
+  <div id="app-wrapper" class="w-full min-h-screen"><!-- Animated Background Grid -->
+   <div class="fixed inset-0 medical-grid pointer-events-none"></div><!-- Floating Medical Elements -->
+   <div class="fixed inset-0 pointer-events-none overflow-hidden"><!-- Floating heartbeat line -->
+    <svg class="absolute top-20 right-32 w-40 h-20 text-sky-200 animate-float opacity-30" viewbox="0 0 200 50"><path d="M0 25 L40 25 L50 10 L60 40 L70 15 L80 35 L90 25 L200 25" stroke="currentColor" stroke-width="2" fill="none" />
+    </svg><!-- Floating medical cross -->
+    <svg class="absolute bottom-32 left-10 w-20 h-20 text-teal-200 animate-float opacity-25" viewbox="0 0 50 50"><rect x="18" y="5" width="14" height="40" rx="2" fill="currentColor" /> <rect x="5" y="18" width="40" height="14" rx="2" fill="currentColor" />
+    </svg><!-- Floating molecules -->
+    <svg class="absolute top-1/3 left-20 w-24 h-24 text-sky-300 opacity-20" viewbox="0 0 80 80"><circle cx="40" cy="20" r="8" fill="currentColor" /> <circle cx="20" cy="50" r="8" fill="currentColor" /> <circle cx="60" cy="50" r="8" fill="currentColor" /> <line x1="40" y1="28" x2="25" y2="45" stroke="currentColor" stroke-width="2" /> <line x1="40" y1="28" x2="55" y2="45" stroke="currentColor" stroke-width="2" /> <line x1="28" y1="52" x2="52" y2="52" stroke="currentColor" stroke-width="2" />
+    </svg>
+   </div><!-- Main Login Container -->
+   <div class="relative z-10 w-full min-h-screen px-4 py-8">
+    <div class="mx-auto w-full max-w-full px-4 md:px-8"><!-- Header Logo & Branding -->
+     <div class="text-center mb-8 animate-slide-down">
+      <div class="inline-block mb-6">
+       <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center shadow-lg shadow-sky-200 animate-glow-pulse">
+        <svg class="w-8 h-8 text-white" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+        </svg>
+       </div>
+      </div>
+      <h1 class="text-3xl font-bold gradient-text mb-2">MediScope</h1>
+      <p id="dashboard-subtitle" class="text-slate-600 font-medium">Real-time health monitoring</p>
+     </div><!-- Dashboard Card -->
+     <div class="glass-card rounded-3xl p-10 shadow-2xl shadow-sky-200/50 animate-slide-up delay-100 w-full">
+      <div class="flex flex-col gap-6 lg:gap-8">
+        <div class="space-y-6">
+
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 id="form-title" class="text-3xl md:text-4xl font-bold text-slate-800 mb-1">Health Vitals Assessment</h2>
+              <p class="text-sm text-slate-500">
+                Logged in as <span id="patient-email-label">patient</span> · Enter your latest vitals to get an AI‑generated health risk summary.
+              </p>
+            </div>
+            <button id="logout-btn" class="btn-login px-4 py-2 rounded-xl text-white text-sm font-semibold">Logout</button>
+          </div><!-- Error Message -->
+          <div id="error-msg" class="error-message mb-4"></div><!-- Vitals Input Form -->
+          <form id="vitals-form" class="space-y-8"><!-- Helper text -->
+            <p class="text-sm text-slate-500">
+              Use your latest home measurements or readings from a clinic. If you are unsure about any value, leave the form and consult a healthcare professional instead of guessing.
+            </p><!-- Vitals Grid -->
+            <div class="vitals-grid grid grid-cols-1 sm:grid-cols-2 gap-6 animate-slide-up delay-200"><!-- Systolic BP -->
+        <div class="vitals-card">
+         <label class="block text-xs font-semibold text-slate-600 mb-2 uppercase">Systolic BP</label>
+         <input type="number" id="systolic" name="systolic" placeholder="e.g. 120" min="60" max="250" class="form-input" required>
+         <span class="text-xs text-slate-500 mt-1 block">Top blood pressure number (when the heart beats), in mmHg.</span>
+        </div><!-- Diastolic BP -->
+        <div class="vitals-card">
+         <label class="block text-xs font-semibold text-slate-600 mb-2 uppercase">Diastolic BP</label>
+         <input type="number" id="diastolic" name="diastolic" placeholder="e.g. 80" min="40" max="150" class="form-input" required>
+         <span class="text-xs text-slate-500 mt-1 block">Bottom blood pressure number (between beats), in mmHg.</span>
+        </div><!-- Heart Rate -->
+        <div class="vitals-card">
+         <label class="block text-xs font-semibold text-slate-600 mb-2 uppercase">Heart Rate</label>
+         <input type="number" id="heart-rate" name="heart-rate" placeholder="e.g. 72" min="30" max="200" class="form-input" required>
+         <span class="text-xs text-slate-500 mt-1 block">Beats per minute (resting pulse).</span>
+        </div><!-- Respiratory Rate -->
+        <div class="vitals-card">
+         <label class="block text-xs font-semibold text-slate-600 mb-2 uppercase">Breathing Rate</label>
+         <input type="number" id="respiratory-rate" name="respiratory-rate" placeholder="e.g. 16" min="8" max="40" class="form-input" required>
+         <span class="text-xs text-slate-500 mt-1 block">Number of breaths per minute.</span>
+        </div><!-- Temperature -->
+        <div class="vitals-card">
+         <label class="block text-xs font-semibold text-slate-600 mb-2 uppercase">Body Temperature</label>
+         <input type="number" id="temperature" name="temperature" placeholder="e.g. 37" min="35" max="42" step="0.1" class="form-input" required>
+         <span class="text-xs text-slate-500 mt-1 block">Body temperature in °C.</span>
+        </div><!-- Oxygen Saturation -->
+        <div class="vitals-card">
+         <label class="block text-xs font-semibold text-slate-600 mb-2 uppercase">O₂ Saturation</label>
+         <input type="number" id="oxygen-sat" name="oxygen-sat" placeholder="e.g. 98" min="70" max="100" class="form-input" required>
+         <span class="text-xs text-slate-500 mt-1 block">Oxygen level on your pulse oximeter, in %.</span>
+        </div><!-- Medication Adherence -->
+        <div class="vitals-card">
+         <label class="block text-xs font-semibold text-slate-600 mb-2 uppercase">Medication Adherence</label>
+         <select id="medication-adherence" name="medication-adherence" class="form-input" required>
+          <option value="">Select</option>
+          <option value="excellent">I almost never miss my medicines</option>
+          <option value="good">I rarely miss doses</option>
+          <option value="fair">I sometimes miss doses</option>
+          <option value="poor">I often miss or skip doses</option>
+         </select>
+         <span class="text-xs text-slate-500 mt-1 block">How closely you follow your prescribed medication plan.</span>
+        </div><!-- Symptom Severity -->
+        <div class="vitals-card">
+         <label class="block text-xs font-semibold text-slate-600 mb-2 uppercase">Current Symptoms</label>
+         <select id="symptom-severity" name="symptom-severity" class="form-input" required>
+          <option value="">Select</option>
+          <option value="none">No noticeable symptoms</option>
+          <option value="mild">Mild discomfort, not limiting activities</option>
+          <option value="moderate">Noticeable symptoms, affecting daily life</option>
+          <option value="severe">Severe symptoms, very limiting or alarming</option>
+         </select>
+         <span class="text-xs text-slate-500 mt-1 block">How bad your symptoms feel right now.</span>
+        </div>
+       </div><!-- Predict Button --> <button type="submit" id="predict-btn" class="btn-login w-full text-white font-semibold py-3.5 rounded-xl mt-4 transition-all duration-300 animate-slide-up delay-300 flex items-center justify-center gap-2"> <span id="btn-text">Predict My Health Risk</span> </button>
+      </form><!-- Prediction Results -->
+      <div id="results-container" class="result-card hidden animate-slide-up delay-300">
+       <div class="flex items-center justify-between mb-6">
+         <h3 class="text-xl font-bold text-slate-800">Your Health Summary</h3>
+         <span id="urgency-indicator" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-slate-100 text-slate-600">—</span>
+       </div>
+       
+       <div class="flex flex-col md:flex-row gap-4 mb-6">
+         <div class="flex-1 p-5 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col items-center justify-center text-center">
+           <span class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-2">Final Risk Level</span>
+           <span id="risk-level" class="text-3xl font-black mb-1">—</span>
+           <span id="risk-explanation" class="text-xs text-slate-500 max-w-[200px]">Calculated using NEWS2 protocol and ML analytics.</span>
+         </div>
+         
+         <div class="flex-1 p-5 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col justify-center">
+           <span class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">AI Confidence</span>
+           <div class="flex items-end gap-2 mb-2">
+             <span id="confidence-label" class="text-2xl font-bold text-slate-700">—</span>
+           </div>
+           <div class="confidence-bar mb-3"><div id="confidence-fill" class="confidence-fill" style="width: 0%;"></div></div>
+           <span id="confidence-explanation" class="text-xs text-slate-500 leading-relaxed md:max-w-xs">—</span>
+         </div>
+       </div>
+
+      <div id="emergency-banner" class="hidden p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 font-semibold mb-6 flex items-start gap-3">
+        <span class="text-xl">🚨</span>
+        <div>
+          <div class="text-sm">CRITICAL CONDITION DETECTED</div>
+          <div class="text-xs mt-1 text-red-600 font-normal">Please seek immediate medical help or go to your nearest emergency room.</div>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <div class="flex items-center gap-2 mb-3">
+          <svg class="w-5 h-5 text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <h4 class="text-sm font-semibold text-slate-700">Secondary Metrics</h4>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="p-3 rounded-lg bg-slate-50/50 border border-slate-100 flex justify-between items-center text-sm">
+            <span class="text-slate-500">NEWS2 Score</span>
+            <span id="news2-score" class="font-bold text-slate-700">—</span>
+          </div>
+          <div class="p-3 rounded-lg bg-slate-50/50 border border-slate-100 flex justify-between items-center text-sm">
+            <span class="text-slate-500">Suggested Dept</span>
+            <span id="recommended-doctor" class="font-bold text-slate-700">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-5 rounded-2xl bg-gradient-to-br from-sky-50 to-teal-50 border border-sky-100/50 mb-6">
+        <h4 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
+          <svg class="w-5 h-5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          Recommended Action Plan
+        </h4>
+        <div class="text-sm text-slate-700 leading-relaxed mb-4 pl-[2px]" id="recommendations-text">
+          <ul class="list-disc pl-4 space-y-2 marker:text-teal-500">
+            <li>Loading recommendations...</li>
+          </ul>
+        </div>
+        
+        <div class="mt-4 pt-4 border-t border-sky-200/40 flex items-start gap-3">
+          <div class="text-base mt-0.5">⚠️</div>
+          <p class="text-[11px] text-slate-600 leading-relaxed">
+            <strong>AI-Generated Advice:</strong> This plan is based on automated analysis of your provided vitals. It does not constitute a formal medical diagnosis. Please consult a qualified healthcare professional before iterating your treatment plan.
+          </p>
+        </div>
+      </div>
+      
+      <div class="flex flex-col gap-2">
+        <button id="download-report-btn" class="btn-login w-full md:w-auto px-6 py-3.5 rounded-xl text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-sky-500/20 hover:shadow-sky-500/40 transition-all">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+          Download Detailed Report
+        </button>
+        <p class="text-[11px] text-slate-400 text-center md:text-left ml-2 mt-1">Includes full history, charts, and chronological analysis to share with your doctor.</p>
+      </div>
+      </div>
+      <div id="history-container" class="result-card mt-6 animate-slide-up delay-400">
+       <h3 class="text-lg font-bold text-slate-800 mb-4">Recent Assessments</h3>
+       <div id="history-empty" class="text-sm text-slate-500">No previous assessments yet.</div>
+       <div id="history-table-wrapper" class="hidden mt-4 overflow-x-auto w-full">
+        <table class="data-table w-full text-sm border-collapse">
+         <thead>
+          <tr class="border-b border-slate-200">
+           <th class="text-left py-3 pr-4 font-semibold text-slate-600">Date</th>
+           <th class="text-left py-3 pr-4 font-semibold text-slate-600">Blood Pressure</th>
+           <th class="text-left py-3 pr-4 font-semibold text-slate-600">Heart / Resp</th>
+           <th class="text-left py-3 pr-4 font-semibold text-slate-600">Temp / O₂</th>
+           <th class="text-left py-3 pr-4 font-semibold text-slate-600">Risk</th>
+           <th class="text-left py-3 pr-4 font-semibold text-slate-600">Doctor</th>
+           <th class="text-left py-3 pr-4 font-semibold text-slate-600">Actions</th>
+          </tr>
+         </thead>
+         <tbody id="history-body"></tbody>
+        </table>
+       </div>
+      </div>
+      <div id="charts-container" class="result-card mt-6 animate-slide-up delay-400 w-full">
+        <h3 class="text-lg font-bold text-slate-800 mb-4">Trend Charts</h3>
+        <div class="flex flex-col gap-6 w-full">
+          <div class="history-card w-full p-4 border border-slate-200 rounded-xl bg-white shadow-sm">
+            <h4 class="text-sm font-semibold mb-4 text-slate-700 uppercase tracking-wide">Blood Pressure Trend</h4>
+            <div class="relative w-full" style="min-height: 300px; height: 300px;">
+              <canvas id="bp-chart" style="width: 100%; height: 100%;"></canvas>
+            </div>
+          </div>
+          <div class="history-card w-full p-4 border border-slate-200 rounded-xl bg-white shadow-sm">
+            <h4 class="text-sm font-semibold mb-4 text-slate-700 uppercase tracking-wide">Heart Rate Trend</h4>
+            <div class="relative w-full" style="min-height: 300px; height: 300px;">
+              <canvas id="hr-chart" style="width: 100%; height: 100%;"></canvas>
+            </div>
+          </div>
+          <div class="history-card w-full p-4 border border-slate-200 rounded-xl bg-white shadow-sm">
+            <h4 class="text-sm font-semibold mb-4 text-slate-700 uppercase tracking-wide">Risk Level Trend</h4>
+            <div class="relative w-full" style="min-height: 300px; height: 300px;">
+              <canvas id="risk-chart" style="width: 100%; height: 100%;"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+        </div><!-- Vitals Form & History END -->
+      </div>
+     </div>
+      </div>
+     </div><!-- Trust Indicators -->
+     <div class="mt-6 flex items-center justify-center gap-6 text-xs text-slate-500 animate-fade-in delay-400">
+      <div class="flex items-center gap-1.5">
+       <svg class="w-4 h-4 text-teal-500" fill="currentColor" viewbox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+       </svg><span>HIPAA Secure</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+       <svg class="w-4 h-4 text-teal-500" fill="currentColor" viewbox="0 0 20 20"><path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+       </svg><span>FDA Approved</span>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+    let bpChart, hrChart, riskChart;
+
+    const defaultConfig = {
+      dashboard_subtitle: "Real-time health monitoring",
+      form_title: "Health Vitals Assessment",
+      prediction_button: "Predict Health Risk",
+      background_color: "#f0f9ff",
+      surface_color: "#ffffff",
+      primary_color: "#0ea5e9",
+      accent_color: "#0d9488",
+      font_family: "Plus Jakarta Sans",
+      font_size: 16
+    };
+
+    async function onConfigChange(config) {
+      // Update dashboard subtitle
+      const dashboardSubtitle = document.getElementById('dashboard-subtitle');
+      if (dashboardSubtitle) {
+        dashboardSubtitle.textContent = config.dashboard_subtitle || defaultConfig.dashboard_subtitle;
+      }
+      
+      // Update form title
+      const formTitle = document.getElementById('form-title');
+      if (formTitle) {
+        formTitle.textContent = config.form_title || defaultConfig.form_title;
+      }
+      
+      // Update button text
+      const btnText = document.getElementById('btn-text');
+      if (btnText) {
+        btnText.textContent = config.prediction_button || defaultConfig.prediction_button;
+      }
+      
+      // Apply colors to primary button
+      const primaryColor = config.primary_color || defaultConfig.primary_color;
+      document.querySelectorAll('.btn-login').forEach(el => {
+        el.style.background = `linear-gradient(135deg, ${primaryColor} 0%, ${adjustColor(primaryColor, -20)} 100%)`;
+      });
+      
+      // Apply accent color
+      const accentColor = config.accent_color || defaultConfig.accent_color;
+      document.querySelectorAll('.link-register').forEach(el => {
+        el.style.color = accentColor;
+      });
+      
+      // Apply font
+      const fontFamily = config.font_family || defaultConfig.font_family;
+      document.body.style.fontFamily = `'${fontFamily}', sans-serif`;
+    }
+    
+    function adjustColor(hex, amount) {
+      const num = parseInt(hex.slice(1), 16);
+      const r = Math.min(255, Math.max(0, (num >> 16) + amount));
+      const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
+      const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
+      return `#${(1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1)}`;
+    }
+    
+    function mapToCapabilities(config) {
+      return {
+        recolorables: [
+          {
+            get: () => config.primary_color || defaultConfig.primary_color,
+            set: (value) => { config.primary_color = value; window.elementSdk.setConfig({ primary_color: value }); }
+          },
+          {
+            get: () => config.accent_color || defaultConfig.accent_color,
+            set: (value) => { config.accent_color = value; window.elementSdk.setConfig({ accent_color: value }); }
+          }
+        ],
+        borderables: [],
+        fontEditable: {
+          get: () => config.font_family || defaultConfig.font_family,
+          set: (value) => { config.font_family = value; window.elementSdk.setConfig({ font_family: value }); }
+        },
+        fontSizeable: {
+          get: () => config.font_size || defaultConfig.font_size,
+          set: (value) => { config.font_size = value; window.elementSdk.setConfig({ font_size: value }); }
+        }
+      };
+    }
+    
+    function mapToEditPanelValues(config) {
+      return new Map([
+        ["dashboard_subtitle", config.dashboard_subtitle || defaultConfig.dashboard_subtitle],
+        ["form_title", config.form_title || defaultConfig.form_title],
+        ["prediction_button", config.prediction_button || defaultConfig.prediction_button]
+      ]);
+    }
+    
+    // Initialize SDK
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities,
+        mapToEditPanelValues
+      });
+    }
+    
+    async function loadHistory() {
+      try {
+        const response = await fetch("/patient-history", { credentials: "include" });
+        if (!response.ok) return;
+        const data = await response.json();
+        const history = data.history || [];
+        const empty = document.getElementById('history-empty');
+        const wrapper = document.getElementById('history-table-wrapper');
+        const body = document.getElementById('history-body');
+
+        if (history.length === 0) {
+          empty.classList.remove('hidden');
+          wrapper.classList.add('hidden');
+          updateTimelineCharts([]);
+          return;
+        }
+
+        empty.classList.add('hidden');
+        wrapper.classList.remove('hidden');
+        body.innerHTML = [...history].reverse().map((h) => {
+          let dateStr = 'Unknown';
+          if (h.created_at) {
+            let dStr = h.created_at;
+            if (!dStr.includes('Z') && !dStr.includes('+')) {
+              dStr = dStr.replace(' ', 'T') + 'Z';
+            }
+            dateStr = new Date(dStr).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+          }
+          return `
+            <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+              <td class="py-3 pr-4 font-medium text-slate-700 whitespace-nowrap">${dateStr}</td>
+              <td class="py-3 pr-4">${h.bp_systolic}/${h.bp_diastolic}</td>
+              <td class="py-3 pr-4">${h.heart_rate} bpm / ${h.respiratory_rate}</td>
+              <td class="py-3 pr-4">${h.temperature} °C / ${h.oxygen_saturation}%</td>
+              <td class="py-3 pr-4">
+                <span class="px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide ${
+                  (h.risk_level || '').toLowerCase() === 'high' ? 'bg-red-100 text-red-700' :
+                  (h.risk_level || '').toLowerCase() === 'medium' ? 'bg-orange-100 text-orange-700' :
+                  'bg-green-100 text-green-700'
+                }">${h.risk_level || '-'}</span>
+              </td>
+              <td class="py-3 pr-4 text-slate-600">${h.recommended_doctor || '-'}</td>
+              <td class="py-3 pr-4">
+                <div class="flex flex-wrap gap-2">
+                  <button type="button" class="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-md bg-sky-100 text-sky-700 hover:bg-sky-200 transition" onclick="viewReport(${h.id})" title="View report">
+                    <span class="text-xs font-semibold">View</span>
+                  </button>
+                  <button type="button" class="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-md bg-sky-600 text-white hover:bg-sky-700 transition" onclick="downloadReport(${h.id})" title="Download report">
+                    <span class="text-xs font-semibold">Download</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        updateTimelineCharts(history);
+      } catch (_) {
+        // ignore for now
+      }
+    }
+
+    // Form handling
+    document.getElementById('vitals-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const systolic = parseInt(document.getElementById('systolic').value);
+      const diastolic = parseInt(document.getElementById('diastolic').value);
+      const heartRate = parseInt(document.getElementById('heart-rate').value);
+      const respiratoryRate = parseInt(document.getElementById('respiratory-rate').value);
+      const temperature = parseFloat(document.getElementById('temperature').value);
+      const oxygenSat = parseInt(document.getElementById('oxygen-sat').value);
+      const medicationAdherence = document.getElementById('medication-adherence').value;
+      const symptomSeverity = document.getElementById('symptom-severity').value;
+      
+      const errorMsg = document.getElementById('error-msg');
+      const btn = e.target.querySelector('button[type="submit"]');
+      const btnText = btn.querySelector('#btn-text');
+      
+      // Reset messages
+      errorMsg.classList.remove('show');
+      errorMsg.textContent = '';
+      
+      // Validation
+      if (!systolic || !diastolic || !heartRate || !respiratoryRate || !temperature || oxygenSat === null) {
+        showError('Please enter all vital signs', errorMsg);
+        return;
+      }
+      
+      if (systolic < 60 || systolic > 250 || diastolic < 40 || diastolic > 150) {
+        showError('Blood pressure values are out of acceptable range', errorMsg);
+        return;
+      }
+      
+      if (heartRate < 30 || heartRate > 200) {
+        showError('Heart rate is out of acceptable range', errorMsg);
+        return;
+      }
+      
+      if (respiratoryRate < 8 || respiratoryRate > 40) {
+        showError('Respiratory rate is out of acceptable range', errorMsg);
+        return;
+      }
+      
+      if (temperature < 35 || temperature > 42) {
+        showError('Temperature is out of acceptable range', errorMsg);
+        return;
+      }
+      
+      if (oxygenSat < 70 || oxygenSat > 100) {
+        showError('Oxygen saturation must be between 70-100%', errorMsg);
+        return;
+      }
+      
+      if (!medicationAdherence || !symptomSeverity) {
+        showError('Please select medication adherence and symptom severity', errorMsg);
+        return;
+      }
+      
+      // Show loading state
+      btn.disabled = true;
+      const originalText = btnText.textContent;
+      btnText.textContent = '';
+      const spinner = document.createElement('div');
+      spinner.className = 'loading-spinner';
+      btnText.appendChild(spinner);
+      
+      try {
+        
+        const response = await fetch("/predict", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            bp_systolic: systolic,
+            bp_diastolic: diastolic,
+            heart_rate: heartRate,
+            respiratory_rate: respiratoryRate,
+            temperature: temperature,
+            oxygen_saturation: oxygenSat,
+            med_adherence: medicationAdherence,
+            symptom_severity: symptomSeverity
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          showError(result.error || "Analysis failed. Please try again.", errorMsg);
+          return;
+        }
+
+        displayResults(result);
+        loadHistory(); // Refresh trends after predict
+        
+      } catch (error) {
+        showError('Analysis failed. Please try again.', errorMsg);
+      } finally {
+        btn.disabled = false;
+        btnText.textContent = originalText;
+      }
+    });
+    
+function updateTimelineCharts(history) {
+  if (!history || history.length === 0) {
+    ['bp-chart', 'hr-chart', 'risk-chart'].forEach(canvasId => {
+      const ctx = document.getElementById(canvasId);
+      if (ctx) {
+        ctx.style.display = 'none';
+        const parent = ctx.parentElement;
+        let noDataMsg = parent.querySelector('.no-data-msg');
+        if (!noDataMsg) {
+          parent.insertAdjacentHTML('beforeend', '<div class="no-data-msg absolute inset-0 flex flex-col items-center justify-center text-slate-400 text-sm p-4"><div class="text-2xl mb-2">📊</div>No data yet</div>');
+        } else {
+          noDataMsg.style.display = 'flex';
+        }
+      }
+    });
+    return;
+  }
+
+  // Ensure canvases are visible and any "No data" message is hidden
+  ['bp-chart', 'hr-chart', 'risk-chart'].forEach(canvasId => {
+      const ctx = document.getElementById(canvasId);
+      if (ctx) {
+        ctx.style.display = 'block';
+        const noDataMsg = ctx.parentElement.querySelector('.no-data-msg');
+        if (noDataMsg) noDataMsg.style.display = 'none';
+      }
+  });
+
+  const labels = history.map(h => {
+    let dStr = h.created_at || '';
+    if (dStr && !dStr.includes('Z') && !dStr.includes('+')) {
+      dStr = dStr.replace(' ', 'T') + 'Z';
+    }
+    return new Date(dStr).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', month: 'short', day: 'numeric' });
+  });
+
+  const systolic = history.map(h => h.bp_systolic || 0);
+  const diastolic = history.map(h => h.bp_diastolic || 0);
+  const heartRate = history.map(h => h.heart_rate || 0);
+  const riskValues = history.map(h => {
+    const level = (h.risk_level || "low").toLowerCase();
+    return level === "high" ? 3 : level === "moderate" ? 2 : 1;
+  });
+
+  renderBPChart(labels, systolic, diastolic);
+  renderHRChart(labels, heartRate);
+  renderRiskChart(labels, riskValues);
+}
+
+async function loadPatientHistoryById(patientId) {
+  try {
+    const response = await fetch(`/patient-history/${patientId}`, { credentials: 'include' });
+    if (!response.ok) return;
+
+    const data = await response.json();
+    const history = data.history || [];
+
+    const empty = document.getElementById('history-empty');
+    const wrapper = document.getElementById('history-table-wrapper');
+    const body = document.getElementById('history-body');
+
+    if (history.length === 0) {
+      empty.classList.remove('hidden');
+      wrapper.classList.add('hidden');
+      updateTimelineCharts([]);
+      return;
+    }
+
+    empty.classList.add('hidden');
+    wrapper.classList.remove('hidden');
+    body.innerHTML = [...history].reverse().map((h) => {
+      let dateStr = 'Unknown';
+      if (h.created_at) {
+        let dStr = h.created_at;
+        if (!dStr.includes('Z') && !dStr.includes('+')) {
+          dStr = dStr.replace(' ', 'T') + 'Z';
+        }
+        dateStr = new Date(dStr).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      }
+      return `
+        <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+          <td class="py-3 pr-4 font-medium text-slate-700 whitespace-nowrap">${dateStr}</td>
+          <td class="py-3 pr-4">${h.bp_systolic}/${h.bp_diastolic}</td>
+          <td class="py-3 pr-4">${h.heart_rate} bpm / ${h.respiratory_rate}</td>
+          <td class="py-3 pr-4">${h.temperature} °C / ${h.oxygen_saturation}%</td>
+          <td class="py-3 pr-4">
+            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide ${
+              (h.risk_level || '').toLowerCase() === 'high' ? 'bg-red-100 text-red-700' :
+              (h.risk_level || '').toLowerCase() === 'medium' ? 'bg-orange-100 text-orange-700' :
+              'bg-green-100 text-green-700'
+            }">${h.risk_level || '-'}</span>
+          </td>
+          <td class="py-3 pr-4 text-slate-600">${h.recommended_doctor || '-'}</td>
+          <td class="py-3 pr-4">
+            <div class="flex flex-wrap gap-2">
+              <button type="button" class="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-md bg-sky-100 text-sky-700 hover:bg-sky-200 transition" onclick="viewReport(${h.id})" title="View report">
+                <span class="text-xs font-semibold">View</span>
+              </button>
+              <button type="button" class="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-md bg-sky-600 text-white hover:bg-sky-700 transition" onclick="downloadReport(${h.id})" title="Download report">
+                <span class="text-xs font-semibold">Download</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    updateTimelineCharts(history);
+  } catch (err) {
+    console.error('Failed to load patient-specific history', err);
+  }
+}
+
+
+function renderBPChart(labels, systolic, diastolic) {
+  const ctx = document.getElementById('bp-chart');
+  if (bpChart) bpChart.destroy();
+  
+  bpChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Systolic',
+          data: systolic,
+          borderColor: '#0ea5e9',
+          backgroundColor: 'rgba(14, 165, 233, 0.1)',
+          tension: 0.4,
+          pointRadius: 6,
+          pointHoverRadius: 8,
+          fill: true
+        },
+        {
+          label: 'Diastolic',
+          data: diastolic,
+          borderColor: '#14b8a6',
+          backgroundColor: 'rgba(20, 184, 166, 0.1)',
+          tension: 0.4,
+          pointRadius: 6,
+          pointHoverRadius: 8,
+          fill: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: ctx => `BP Reading: ${ctx[0].parsed.y}/${ctx[1]?.parsed.y || '—'} mmHg`,
+            label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y} mmHg`
+          }
+        }
+      },
+      scales: {
+        x: { grid: { display: false } },
+        y: { 
+          beginAtZero: false,
+          grid: { color: 'rgba(14, 165, 233, 0.1)' }
+        }
+      }
+    }
+  });
+}
+
+function renderHRChart(labels, heartRate) {
+  const ctx = document.getElementById('hr-chart');
+  if (hrChart) hrChart.destroy();
+
+  const abnormalPoints = heartRate.map((hr, idx) => hr > 100 ? idx : null).filter(Boolean);
+  
+  hrChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Heart Rate',
+        data: heartRate,
+        borderColor: '#fb7185',
+        backgroundColor: 'rgba(251, 113, 133, 0.1)',
+        tension: 0.4,
+        pointRadius: context => context.raw > 100 ? 10 : 6,
+        pointBackgroundColor: context => context.raw > 100 ? '#ef4444' : '#fb7185',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 2,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: ctx => `Heart Rate: ${ctx[0].parsed.y} bpm`,
+            afterLabel: ctx => ctx.parsed.y > 100 ? '⚠️ Abnormal reading' : ''
+          }
+        }
+      },
+      scales: {
+        x: { grid: { display: false } },
+        y: { 
+          beginAtZero: false,
+          grid: { color: 'rgba(251, 113, 133, 0.1)' }
+        }
+      }
+    }
+  });
+}
+
+function renderRiskChart(labels, riskValues) {
+  const ctx = document.getElementById('risk-chart');
+  if (riskChart) riskChart.destroy();
+
+  const riskColors = riskValues.map(risk => risk === 3 ? '#ef4444' : risk === 2 ? '#f97316' : '#22c55e');
+  
+  riskChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Risk Level',
+        data: riskValues,
+        borderColor: '#94a3b8',
+        backgroundColor: 'rgba(148, 163, 184, 0.1)',
+        pointRadius: 8,
+        pointHoverRadius: 12,
+        pointBackgroundColor: riskColors,
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 2,
+        fill: true,
+        stepped: 'before'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => `Risk: ${['Low', 'Medium', 'High'][ctx.parsed.y - 1]}`
+          }
+        }
+      },
+      scales: {
+        x: { grid: { display: false } },
+        y: { 
+          min: 0.5,
+          max: 3.5,
+          ticks: {
+            stepSize: 1,
+            callback: value => [' ', 'Low', 'Medium', 'High'][value]
+          },
+          grid: { color: 'rgba(251, 146, 60, 0.1)' }
+        }
+      }
+    }
+  });
+}
+
+function updateInsights(history) {
+  if (!history || history.length === 0) return;
+
+  // BP Insights
+  const highBP = history.filter(h => (h.bp_systolic || 0) >= 140 || (h.bp_diastolic || 0) >= 90);
+  document.getElementById('bp-insight').innerHTML = highBP.length > 0 
+    ? `<strong>${highBP.length} high readings</strong><br>Hypertension range detected on ${highBP.length > 1 ? 'multiple days' : new Date(highBP[0].created_at).toLocaleDateString()}`
+    : 'Blood pressure stable within normal ranges';
+
+  // HR Insights
+  const highHR = history.filter(h => (h.heart_rate || 0) > 100);
+  document.getElementById('hr-insight').innerHTML = highHR.length > 0 
+    ? `<strong>${highHR.length} elevated readings</strong><br>Tachycardia detected${highHR.length > 1 ? ' on multiple occasions' : ''}`
+    : 'Heart rate consistently normal';
+
+  // Risk Insights
+  const highRisk = history.filter(h => h.risk_level?.toLowerCase() === 'high');
+  document.getElementById('risk-insight').innerHTML = highRisk.length > 0 
+    ? `<strong>${highRisk.length} high risk days</strong><br>Review with doctor recommended`
+    : 'Risk levels stable - continue monitoring';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Initial load
+  loadHistory();
+});
+
+function displayResults(result) {
+      const container = document.getElementById('results-container');
+      const urgencyIndicator = document.getElementById('urgency-indicator');
+      const emergencyBanner = document.getElementById('emergency-banner');
+      const riskBadge = document.getElementById('risk-level');
+      const confidenceLabel = document.getElementById('confidence-label');
+      const confidenceFill = document.getElementById('confidence-fill');
+      const confidenceExplanation = document.getElementById('confidence-explanation');
+      
+      const news2Score = document.getElementById('news2-score');
+      const recommendedDoctor = document.getElementById('recommended-doctor');
+      const recommendationsText = document.getElementById('recommendations-text');
+
+      const finalRisk = (result.final_risk || 'Low').toLowerCase();
+      
+      // Update Urgency Status
+      if (finalRisk === 'high') {
+         urgencyIndicator.textContent = 'Immediate attention required';
+         urgencyIndicator.className = 'px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide bg-red-100 text-red-700';
+         riskBadge.className = 'text-3xl font-black text-red-600';
+      } else if (finalRisk === 'medium') {
+         urgencyIndicator.textContent = 'Prioritized attention required';
+         urgencyIndicator.className = 'px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide bg-orange-100 text-orange-700';
+         riskBadge.className = 'text-3xl font-black text-orange-600';
+      } else {
+         urgencyIndicator.textContent = 'Standard monitoring';
+         urgencyIndicator.className = 'px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide bg-emerald-100 text-emerald-700';
+         riskBadge.className = 'text-3xl font-black text-emerald-600';
+      }
+      
+      if (emergencyBanner) {
+         emergencyBanner.classList.toggle('hidden', finalRisk !== 'high');
+      }
+
+      riskBadge.textContent = finalRisk.toUpperCase();
+
+      news2Score.textContent = result.news2_score ?? '—';
+
+      // Advanced Confidence handling
+      const confidence = result.confidence ?? 0;
+      confidenceFill.style.width = `${Math.min(100, confidence)}%`;
+      
+      if (confidence >= 85) {
+        confidenceLabel.textContent = 'High';
+        confidenceLabel.className = 'text-2xl font-bold text-teal-600';
+        confidenceExplanation.textContent = 'Models are highly aligned based on your provided data.';
+      } else if (confidence >= 65) {
+        confidenceLabel.textContent = 'Moderate';
+        confidenceLabel.className = 'text-2xl font-bold text-orange-500';
+        confidenceExplanation.textContent = 'Models provided a standard diagnosis but some vitals might be border-line.';
+      } else {
+        confidenceLabel.textContent = 'Low';
+        confidenceLabel.className = 'text-2xl font-bold text-slate-600';
+        confidenceExplanation.textContent = 'Conflicting indicators detected. Please run assessments carefully and consult a doctor.';
+      }
+
+      recommendedDoctor.textContent = result.recommended_doctor || (finalRisk === 'high' ? 'Specialist/ER' : 'General Practitioner');
+
+      // Enhanced structured recommendations
+      const recs = [];
+      if (finalRisk === 'high') {
+        recs.push('Seek immediate medical evaluation from your nearest emergency room or specialist.');
+        recs.push('Do not attempt to alter medication doses without consulting a doctor first.');
+        recs.push('Monitor your heart rate and breathing continuously.');
+      } else if (finalRisk === 'medium') {
+        recs.push('Schedule a consultation with your doctor within the next 24-48 hours.');
+        recs.push('Review your current medication schedule to ensure perfect adherence.');
+        recs.push('Re-assess your vitals in 4-6 hours to capture any worsening trends.');
+      } else {
+        recs.push('Continue strictly with your routine medical plan.');
+        recs.push('Log your vitals again tomorrow to maintain a healthy baseline.');
+        recs.push('Stay hydrated and maintain your physical activity as recommended by your primary care.');
+      }
+      
+      recommendationsText.innerHTML = `<ul class="list-disc pl-4 space-y-2 marker:text-teal-500">` + 
+        recs.map(r => `<li>${r}</li>`).join('') + `</ul>`;
+
+      // Show results and scroll into view
+      container.classList.remove('hidden');
+      container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      
+      // Auto-refresh trends after predict
+      loadHistory();
+    }
+
+    function showError(message, element) {
+      element.textContent = message;
+      element.classList.add('show');
+      element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    async function downloadPdfFromUrl(url, buttonElement) {
+      if (buttonElement) buttonElement.disabled = true;
+
+      try {
+        const response = await fetch(url, {
+          method: 'GET',
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null);
+          const message = (errorData && errorData.error) || 'Unable to download report.';
+          showError(message, document.getElementById('error-msg'));
+          return;
+        }
+
+        const blob = await response.blob();
+        const contentDisposition = response.headers.get('Content-Disposition') || '';
+        const filenameMatch = contentDisposition.match(/filename="?(.*)"?/);
+        const filename = (filenameMatch && filenameMatch[1]) || 'mediscope-report.pdf';
+
+        const objectUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = objectUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(objectUrl);
+      } catch (err) {
+        showError('Download failed. Please try again.', document.getElementById('error-msg'));
+      } finally {
+        if (buttonElement) buttonElement.disabled = false;
+      }
+    }
+
+    function downloadReport(recordId) {
+      if (!recordId) {
+        // default, download latest
+        const downloadBtn = document.getElementById('download-report-btn');
+        downloadPdfFromUrl('/download-report', downloadBtn);
+        return;
+      }
+
+      // download a specific assessment record
+      window.open(`/download-report/${recordId}`, '_blank');
+    }
+
+    function viewReport(recordId) {
+      window.location.href = `/report/${recordId}`;
+    }
+    
+    async function logout() {
+      try {
+        await fetch("/logout", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" }
+        });
+      } catch (_) {
+        // ignore
+      } finally {
+        window.location.href = "/login?role=patient";
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const logoutBtn = document.getElementById('logout-btn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', logout);
+      }
+
+      const downloadBtn = document.getElementById('download-report-btn');
+      if (downloadBtn) {
+        downloadBtn.addEventListener('click', () => downloadReport());
+      }
+
+      const queryPatientId = new URLSearchParams(window.location.search).get('patient_id');
+      if (queryPatientId) {
+        loadPatientHistoryById(queryPatientId);
+      } else {
+        loadHistory();
+      }
+    });
+
+  </script>
+</html>

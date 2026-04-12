@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediScope - Patient Registration</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-15px); }
+    }
+    
+    @keyframes glow-pulse {
+      0%, 100% { box-shadow: 0 0 20px rgba(14, 165, 233, 0.3); }
+      50% { box-shadow: 0 0 40px rgba(14, 165, 233, 0.5); }
+    }
+    
+    @keyframes slide-down {
+      0% { opacity: 0; transform: translateY(-20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slide-up {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes fade-in {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    
+    .animate-float {
+      animation: float 5s ease-in-out infinite;
+    }
+    
+    .animate-glow-pulse {
+      animation: glow-pulse 3s ease-in-out infinite;
+    }
+    
+    .animate-slide-down {
+      animation: slide-down 0.6s ease-out forwards;
+    }
+    
+    .animate-slide-up {
+      animation: slide-up 0.6s ease-out forwards;
+    }
+    
+    .animate-fade-in {
+      animation: fade-in 0.8s ease-out forwards;
+    }
+    
+    .delay-100 { animation-delay: 0.1s; }
+    .delay-200 { animation-delay: 0.2s; }
+    .delay-300 { animation-delay: 0.3s; }
+    .delay-400 { animation-delay: 0.4s; }
+    
+    .gradient-text {
+      background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+    }
+    
+    .medical-grid {
+      background-image: 
+        linear-gradient(rgba(14, 165, 233, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(14, 165, 233, 0.05) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    
+    .form-input {
+      background: rgba(248, 250, 252, 0.8);
+      border: 2px solid rgba(14, 165, 233, 0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: #0ea5e9;
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+      background: rgba(248, 250, 252, 1);
+    }
+    
+    .form-input::placeholder {
+      color: #94a3b8;
+    }
+    
+    .btn-login {
+      background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+      box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);
+      transition: all 0.3s ease;
+    }
+    
+    .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(14, 165, 233, 0.5);
+    }
+    
+    .btn-login:active {
+      transform: translateY(0);
+    }
+    
+    .btn-login:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    
+    .link-register {
+      color: #0ea5e9;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      border-bottom: 2px solid transparent;
+    }
+    
+    .link-register:hover {
+      border-bottom-color: #0ea5e9;
+      color: #0284c7;
+    }
+    
+    .floating-element {
+      position: absolute;
+      opacity: 0.1;
+    }
+    
+    .error-message {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #dc2626;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      display: none;
+    }
+    
+    .error-message.show {
+      display: block;
+      animation: slide-up 0.3s ease-out;
+    }
+    
+    .success-message {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #16a34a;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      display: none;
+    }
+    
+    .success-message.show {
+      display: block;
+      animation: slide-up 0.3s ease-out;
+    }
+    
+    .loading-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+ </head>
+ <body class="h-full bg-gradient-to-br from-sky-50 via-blue-50 to-teal-50">
+  <div id="app-wrapper" class="w-full h-full overflow-auto">
+   <!-- Animated Background Grid -->
+   <div class="fixed inset-0 medical-grid pointer-events-none"></div><!-- Floating Medical Elements -->
+   <div class="fixed inset-0 pointer-events-none overflow-hidden">
+    <!-- Floating heartbeat line -->
+    <svg class="absolute top-20 right-32 w-40 h-20 text-sky-200 animate-float opacity-30" viewbox="0 0 200 50">
+     <path d="M0 25 L40 25 L50 10 L60 40 L70 15 L80 35 L90 25 L200 25" stroke="currentColor" stroke-width="2" fill="none" />
+    </svg><!-- Floating medical cross -->
+    <svg class="absolute bottom-32 left-10 w-20 h-20 text-teal-200 animate-float opacity-25" viewbox="0 0 50 50">
+     <rect x="18" y="5" width="14" height="40" rx="2" fill="currentColor" /> <rect x="5" y="18" width="40" height="14" rx="2" fill="currentColor" />
+    </svg><!-- Floating molecules -->
+    <svg class="absolute top-1/3 left-20 w-24 h-24 text-sky-300 opacity-20" viewbox="0 0 80 80">
+     <circle cx="40" cy="20" r="8" fill="currentColor" /> <circle cx="20" cy="50" r="8" fill="currentColor" /> <circle cx="60" cy="50" r="8" fill="currentColor" /> <line x1="40" y1="28" x2="25" y2="45" stroke="currentColor" stroke-width="2" /> <line x1="40" y1="28" x2="55" y2="45" stroke="currentColor" stroke-width="2" /> <line x1="28" y1="52" x2="52" y2="52" stroke="currentColor" stroke-width="2" />
+    </svg>
+   </div><!-- Main Login Container -->
+   <div class="relative z-10 w-full min-h-full flex justify-center items-start px-4 py-8 pt-[80px]">
+    <div class="auth-wrapper w-full max-w-md">
+     <!-- Header Logo & Branding -->
+     <div class="text-center mb-8 animate-slide-down">
+      <div class="inline-block mb-6">
+       <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center shadow-lg shadow-sky-200 animate-glow-pulse">
+        <svg class="w-8 h-8 text-white" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+         <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+        </svg>
+       </div>
+      </div>
+      <h1 class="text-3xl font-bold gradient-text mb-2">MediScope</h1>
+      <p id="registration-subtitle" class="text-slate-600 font-medium">Your health, our priority</p>
+     </div><!-- Login Card -->
+     <div class="auth-card glass-card rounded-3xl p-8 shadow-2xl shadow-sky-200/50 animate-slide-up delay-100">
+      <!-- Form Title -->
+      <div class="mb-8">
+       <h2 id="form-title" class="text-2xl font-bold text-slate-800 mb-2">Create Your Health Profile</h2>
+       <p class="text-sm text-slate-600">Your medical information helps us provide better care</p>
+      </div><!-- Messages -->
+      <div id="error-msg" class="error-message mb-4"></div>
+      <div id="success-msg" class="success-message mb-4"></div><!-- Registration Form -->
+      <form id="registration-form" class="space-y-5">
+       <!-- Name Field -->
+       <div class="animate-slide-up delay-200"><label for="name" class="block text-sm font-semibold text-slate-700 mb-2.5">Full Name</label> <input type="text" id="name" name="name" placeholder="John Smith" class="form-input w-full px-4 py-3 rounded-xl" required>
+       </div><!-- Age and Gender -->
+       <div class="grid grid-cols-2 gap-4">
+        <div class="animate-slide-up delay-300"><label for="age" class="block text-sm font-semibold text-slate-700 mb-2.5">Age</label> <input type="number" id="age" name="age" placeholder="35" class="form-input w-full px-4 py-3 rounded-xl" min="18" max="120" required>
+        </div>
+        <div class="animate-slide-up delay-300"><label for="gender" class="block text-sm font-semibold text-slate-700 mb-2.5">Gender</label> <select id="gender" name="gender" class="form-input w-full px-4 py-3 rounded-xl" required> <option value="">Select gender</option> <option value="male">Male</option> <option value="female">Female</option> <option value="other">Other</option> <option value="prefer-not">Prefer not to say</option> </select>
+        </div>
+       </div><!-- Email Field -->
+       <div class="animate-slide-up delay-400"><label for="email" class="block text-sm font-semibold text-slate-700 mb-2.5">Email Address</label> <input type="email" id="email" name="email" placeholder="patient@email.com" class="form-input w-full px-4 py-3 rounded-xl" required>
+       </div><!-- Password Field -->
+       <div class="animate-slide-up delay-400"><label for="password" class="block text-sm font-semibold text-slate-700 mb-2.5">Password</label> <input type="password" id="password" name="password" placeholder="••••••••" class="form-input w-full px-4 py-3 rounded-xl" required>
+       </div><!-- Confirm Password Field -->
+       <div class="animate-slide-up delay-400"><label for="confirm-password" class="block text-sm font-semibold text-slate-700 mb-2.5">Confirm Password</label> <input type="password" id="confirm-password" name="confirm-password" placeholder="••••••••" class="form-input w-full px-4 py-3 rounded-xl" required>
+       </div><!-- Family History -->
+       <div class="animate-slide-up delay-400"><label for="family-history" class="block text-sm font-semibold text-slate-700 mb-2.5">Family Medical History</label> <textarea id="family-history" name="family-history" placeholder="List any hereditary conditions (e.g., diabetes, heart disease)" class="form-input w-full px-4 py-3 rounded-xl h-20 resize-none" required></textarea>
+       </div><!-- Current Medications -->
+       <div class="animate-slide-up delay-400"><label for="medications" class="block text-sm font-semibold text-slate-700 mb-2.5">Current Medications</label> <textarea id="medications" name="medications" placeholder="List medications you're currently taking" class="form-input w-full px-4 py-3 rounded-xl h-20 resize-none" required></textarea>
+       </div><!-- Privacy Consent -->
+       <div class="flex items-start gap-3 pt-2 animate-slide-up delay-400"><label class="flex items-start gap-3 cursor-pointer"> <input type="checkbox" name="privacy" class="w-4 h-4 accent-sky-500 mt-1"> <span class="text-sm text-slate-600 font-medium">I consent to MediScope storing my health information according to HIPAA regulations</span> </label>
+       </div><!-- Register Button --> <button type="submit" class="btn-login w-full text-white font-semibold py-3 rounded-xl mt-6 transition-all duration-300 animate-slide-up delay-400 flex items-center justify-center gap-2"> <span id="btn-text">Create Patient Account</span> </button>
+      </form><!-- Divider -->
+      <div class="relative my-6 animate-slide-up delay-400">
+       <div class="absolute inset-0 flex items-center">
+        <div class="w-full border-t border-slate-200"></div>
+       </div>
+       <div class="relative flex justify-center text-sm"><span class="px-3 bg-white text-slate-500 font-medium">Already have an account?</span>
+       </div>
+      </div><!-- Login Link --> <a href="/login?role=patient" class="block w-full text-center px-4 py-3 border-2 border-sky-200 text-sky-600 font-semibold rounded-xl hover:bg-sky-50 transition-colors duration-300 animate-slide-up delay-400">Sign In to Your Account</a>
+     </div><!-- Trust Indicators -->
+     <div class="mt-6 flex items-center justify-center gap-6 text-xs text-slate-500 animate-fade-in delay-400">
+      <div class="flex items-center gap-1.5">
+       <svg class="w-4 h-4 text-teal-500" fill="currentColor" viewbox="0 0 20 20">
+        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+       </svg><span>HIPAA Secure</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+       <svg class="w-4 h-4 text-teal-500" fill="currentColor" viewbox="0 0 20 20">
+        <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+       </svg><span>FDA Approved</span>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      registration_title: "Create Your Health Profile",
+      registration_subtitle: "Your health, our priority",
+      form_description: "Your medical information helps us provide better care",
+      name_label: "Full Name",
+      age_label: "Age",
+      gender_label: "Gender",
+      email_label: "Email Address",
+      password_label: "Password",
+      confirm_password_label: "Confirm Password",
+      family_history_label: "Family Medical History",
+      medications_label: "Current Medications",
+      privacy_label: "I consent to MediScope storing my health information according to HIPAA regulations",
+      register_button_text: "Create Patient Account",
+      existing_account_text: "Already have an account?",
+      signin_button_text: "Sign In to Your Account",
+      background_color: "#f0f9ff",
+      surface_color: "#ffffff",
+      primary_color: "#0ea5e9",
+      accent_color: "#0d9488",
+      font_family: "Plus Jakarta Sans",
+      font_size: 16
+    };
+
+    async function onConfigChange(config) {
+      // Update registration subtitle
+      const registrationSubtitle = document.getElementById('registration-subtitle');
+      if (registrationSubtitle) {
+        registrationSubtitle.textContent = config.registration_subtitle || defaultConfig.registration_subtitle;
+      }
+      
+      // Update form title
+      const formTitle = document.getElementById('form-title');
+      if (formTitle) {
+        formTitle.textContent = config.registration_title || defaultConfig.registration_title;
+      }
+      
+      // Apply colors to primary button
+      const primaryColor = config.primary_color || defaultConfig.primary_color;
+      document.querySelectorAll('.btn-login').forEach(el => {
+        el.style.background = `linear-gradient(135deg, ${primaryColor} 0%, ${adjustColor(primaryColor, -20)} 100%)`;
+      });
+      
+      // Apply accent color
+      const accentColor = config.accent_color || defaultConfig.accent_color;
+      document.querySelectorAll('.link-register').forEach(el => {
+        el.style.color = accentColor;
+      });
+      
+      // Apply font
+      const fontFamily = config.font_family || defaultConfig.font_family;
+      document.body.style.fontFamily = `'${fontFamily}', sans-serif`;
+    }
+    
+    function adjustColor(hex, amount) {
+      const num = parseInt(hex.slice(1), 16);
+      const r = Math.min(255, Math.max(0, (num >> 16) + amount));
+      const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
+      const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
+      return `#${(1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1)}`;
+    }
+    
+    function mapToCapabilities(config) {
+      return {
+        recolorables: [
+          {
+            get: () => config.primary_color || defaultConfig.primary_color,
+            set: (value) => { config.primary_color = value; window.elementSdk.setConfig({ primary_color: value }); }
+          },
+          {
+            get: () => config.accent_color || defaultConfig.accent_color,
+            set: (value) => { config.accent_color = value; window.elementSdk.setConfig({ accent_color: value }); }
+          }
+        ],
+        borderables: [],
+        fontEditable: {
+          get: () => config.font_family || defaultConfig.font_family,
+          set: (value) => { config.font_family = value; window.elementSdk.setConfig({ font_family: value }); }
+        },
+        fontSizeable: {
+          get: () => config.font_size || defaultConfig.font_size,
+          set: (value) => { config.font_size = value; window.elementSdk.setConfig({ font_size: value }); }
+        }
+      };
+    }
+    
+    function mapToEditPanelValues(config) {
+      return new Map([
+        ["registration_subtitle", config.registration_subtitle || defaultConfig.registration_subtitle],
+        ["form_title", config.registration_title || defaultConfig.registration_title]
+      ]);
+    }
+    
+    // Initialize SDK
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities,
+        mapToEditPanelValues
+      });
+    }
+    
+    // Form handling
+    document.getElementById('registration-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const name = document.getElementById('name').value.trim();
+      const age = parseInt(document.getElementById('age').value);
+      const gender = document.getElementById('gender').value;
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+      const familyHistory = document.getElementById('family-history').value.trim();
+      const medications = document.getElementById('medications').value.trim();
+      const privacyConsent = document.querySelector('input[name="privacy"]').checked;
+      const errorMsg = document.getElementById('error-msg');
+      const successMsg = document.getElementById('success-msg');
+      const btn = e.target.querySelector('button[type="submit"]');
+      const btnText = btn.querySelector('#btn-text');
+      
+      // Reset messages
+      errorMsg.classList.remove('show');
+      successMsg.classList.remove('show');
+      errorMsg.textContent = '';
+      successMsg.textContent = '';
+      
+      // Validation
+      if (!name) {
+        showError('Please enter your full name', errorMsg);
+        return;
+      }
+      
+      if (name.length < 3) {
+        showError('Name must be at least 3 characters long', errorMsg);
+        return;
+      }
+      
+      if (!age || age < 18 || age > 120) {
+        showError('Please enter a valid age between 18 and 120', errorMsg);
+        return;
+      }
+      
+      if (!gender) {
+        showError('Please select your gender', errorMsg);
+        return;
+      }
+      
+      if (!email) {
+        showError('Please enter your email address', errorMsg);
+        return;
+      }
+      
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        showError('Please enter a valid email address', errorMsg);
+        return;
+      }
+      
+      if (!password) {
+        showError('Please enter a password', errorMsg);
+        return;
+      }
+      
+      if (password.length < 8) {
+        showError('Password must be at least 8 characters long', errorMsg);
+        return;
+      }
+      
+      if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
+        showError('Password must contain uppercase, lowercase, and numbers', errorMsg);
+        return;
+      }
+      
+      if (password !== confirmPassword) {
+        showError('Passwords do not match', errorMsg);
+        return;
+      }
+      
+      if (!familyHistory) {
+        showError('Please provide your family medical history', errorMsg);
+        return;
+      }
+      
+      if (!medications) {
+        showError('Please list your current medications', errorMsg);
+        return;
+      }
+      
+      if (!privacyConsent) {
+        showError('You must consent to HIPAA privacy regulations', errorMsg);
+        return;
+      }
+      
+      // Simulate registration
+      btn.disabled = true;
+      const originalText = btnText.textContent;
+      btnText.textContent = '';
+      const spinner = document.createElement('div');
+      spinner.className = 'loading-spinner';
+      btnText.appendChild(spinner);
+      
+      try {
+        const response = await fetch("/patient-register", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            name,
+            age,
+            gender,
+            email,
+            password,
+            family_history: familyHistory,
+            medications
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          const message = result.error || result.message || "Registration failed";
+          showError(message, errorMsg);
+          return;
+        }
+
+        showSuccess("Patient account created successfully! Redirecting...", successMsg);
+
+        setTimeout(() => {
+          window.location.href = "/login?role=patient";
+        }, 2000);
+        
+      } catch (error) {
+        showError('Registration failed. Please try again.', errorMsg);
+      } finally {
+        btn.disabled = false;
+        btnText.textContent = originalText;
+      }
+    });
+    
+    function showError(message, element) {
+      element.textContent = message;
+      element.classList.add('show');
+      element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    
+    function showSuccess(message, element) {
+      element.textContent = message;
+      element.classList.add('show');
+      element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  </script>
+</html>

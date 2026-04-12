@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediScope - AI-Powered Healthcare</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+    
+    @keyframes pulse-ring {
+      0% { transform: scale(0.8); opacity: 1; }
+      100% { transform: scale(1.4); opacity: 0; }
+    }
+    
+    @keyframes slide-up {
+      0% { opacity: 0; transform: translateY(30px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes fade-in {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    
+    .animate-float {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    .animate-float-delayed {
+      animation: float 6s ease-in-out infinite;
+      animation-delay: 2s;
+    }
+    
+    .animate-pulse-ring {
+      animation: pulse-ring 2s ease-out infinite;
+    }
+    
+    .animate-slide-up {
+      animation: slide-up 0.8s ease-out forwards;
+    }
+    
+    .animate-fade-in {
+      animation: fade-in 1s ease-out forwards;
+    }
+    
+    .delay-100 { animation-delay: 0.1s; }
+    .delay-200 { animation-delay: 0.2s; }
+    .delay-300 { animation-delay: 0.3s; }
+    .delay-400 { animation-delay: 0.4s; }
+    
+    .gradient-text {
+      background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 50%, #0369a1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .glass-card {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+    
+    .medical-grid {
+      background-image: 
+        linear-gradient(rgba(14, 165, 233, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(14, 165, 233, 0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+      box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(14, 165, 233, 0.5);
+    }
+    
+    .btn-secondary {
+      background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+      box-shadow: 0 4px 15px rgba(13, 148, 136, 0.4);
+      transition: all 0.3s ease;
+    }
+    
+    .btn-secondary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(13, 148, 136, 0.5);
+    }
+    
+    .btn-outline {
+      border: 2px solid #0ea5e9;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-outline:hover {
+      background: #0ea5e9;
+      color: white;
+      transform: translateY(-2px);
+    }
+    
+    .btn-outline-teal {
+      border: 2px solid #0d9488;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-outline-teal:hover {
+      background: #0d9488;
+      color: white;
+      transform: translateY(-2px);
+    }
+    
+    .feature-card {
+      transition: all 0.4s ease;
+    }
+    
+    .feature-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(14, 165, 233, 0.15);
+    }
+    
+    .dna-helix {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      opacity: 0.1;
+    }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+ </head>
+ <body class="h-full">
+  <div id="app-wrapper" class="w-full h-full overflow-auto"><!-- Background -->
+   <div class="fixed inset-0 medical-grid" style="background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 50%, #f0f9ff 100%);"></div><!-- Floating Medical Elements -->
+   <div class="fixed inset-0 pointer-events-none overflow-hidden"><!-- DNA Helix Pattern -->
+    <svg class="absolute top-20 left-10 w-24 h-24 text-sky-200 animate-float opacity-60" viewbox="0 0 100 100" fill="none"><path d="M30 10 Q50 25 70 10 Q50 -5 30 10" stroke="currentColor" stroke-width="2" fill="none" /> <path d="M30 30 Q50 45 70 30 Q50 15 30 30" stroke="currentColor" stroke-width="2" fill="none" /> <path d="M30 50 Q50 65 70 50 Q50 35 30 50" stroke="currentColor" stroke-width="2" fill="none" /> <path d="M30 70 Q50 85 70 70 Q50 55 30 70" stroke="currentColor" stroke-width="2" fill="none" /> <path d="M30 90 Q50 105 70 90 Q50 75 30 90" stroke="currentColor" stroke-width="2" fill="none" /> <line x1="30" y1="10" x2="30" y2="90" stroke="currentColor" stroke-width="1.5" /> <line x1="70" y1="10" x2="70" y2="90" stroke="currentColor" stroke-width="1.5" />
+    </svg><!-- Heartbeat Line -->
+    <svg class="absolute top-40 right-20 w-32 h-16 text-sky-300 animate-float-delayed opacity-50" viewbox="0 0 200 50"><path d="M0 25 L40 25 L50 10 L60 40 L70 15 L80 35 L90 25 L200 25" stroke="currentColor" stroke-width="2" fill="none" />
+    </svg><!-- Medical Cross -->
+    <svg class="absolute bottom-40 left-20 w-16 h-16 text-sky-200 animate-float opacity-40" viewbox="0 0 50 50"><rect x="18" y="5" width="14" height="40" rx="2" fill="currentColor" /> <rect x="5" y="18" width="40" height="14" rx="2" fill="currentColor" />
+    </svg><!-- Molecule -->
+    <svg class="absolute bottom-60 right-40 w-20 h-20 text-teal-200 animate-float-delayed opacity-50" viewbox="0 0 80 80"><circle cx="40" cy="20" r="8" fill="currentColor" /> <circle cx="20" cy="50" r="8" fill="currentColor" /> <circle cx="60" cy="50" r="8" fill="currentColor" /> <circle cx="40" cy="65" r="6" fill="currentColor" /> <line x1="40" y1="28" x2="25" y2="45" stroke="currentColor" stroke-width="2" /> <line x1="40" y1="28" x2="55" y2="45" stroke="currentColor" stroke-width="2" /> <line x1="28" y1="52" x2="52" y2="52" stroke="currentColor" stroke-width="2" /> <line x1="35" y1="58" x2="40" y2="65" stroke="currentColor" stroke-width="2" />
+    </svg>
+   </div><!-- Navigation -->
+   <nav class="relative z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+     <div class="glass-card rounded-2xl px-6 py-4 flex items-center justify-between shadow-lg shadow-sky-100/50"><!-- Logo -->
+      <div class="flex items-center gap-3">
+       <div class="relative">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center shadow-lg shadow-sky-200">
+         <svg class="w-7 h-7 text-white" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+         </svg>
+        </div>
+        <div class="absolute -top-1 -right-1 w-4 h-4 bg-teal-400 rounded-full flex items-center justify-center">
+         <svg class="w-2.5 h-2.5 text-white" viewbox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" />
+         </svg>
+        </div>
+       </div>
+       <div>
+        <h1 id="logo-text" class="text-2xl font-bold gradient-text">MediScope</h1>
+        <p class="text-xs text-sky-600 font-medium -mt-1">AI Healthcare Platform</p>
+       </div>
+      </div><!-- Nav Links -->
+      <div class="hidden md:flex items-center gap-8"><a href="#features" class="text-slate-600 hover:text-sky-600 font-medium transition-colors">Features</a> <a href="#about" class="text-slate-600 hover:text-sky-600 font-medium transition-colors">About</a> <a href="#contact" class="text-slate-600 hover:text-sky-600 font-medium transition-colors">Contact</a>
+      </div><!-- CTA --> <button class="hidden md:block btn-primary text-white px-6 py-2.5 rounded-xl font-semibold text-sm"> Get Started </button> <!-- Mobile Menu --> <button class="md:hidden text-slate-600">
+       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+       </svg></button>
+     </div>
+    </div>
+   </nav><!-- Hero Section -->
+   <main class="relative z-10">
+    <div class="max-w-7xl mx-auto px-6 pt-12 pb-20">
+     <div class="grid lg:grid-cols-2 gap-16 items-center"><!-- Left Content -->
+      <div class="space-y-8">
+       <div class="inline-flex items-center gap-2 bg-white/80 backdrop-blur px-4 py-2 rounded-full shadow-md animate-slide-up"><span class="relative flex h-3 w-3"> <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span> <span class="relative inline-flex rounded-full h-3 w-3 bg-teal-500"></span> </span> <span id="hero-subtitle" class="text-sm font-semibold text-slate-700">Next-Gen Healthcare Technology</span>
+       </div>
+       <h1 id="hero-title" class="text-5xl lg:text-6xl font-extrabold text-slate-800 leading-tight animate-slide-up delay-100">AI-Powered <span class="gradient-text">Disease Prediction</span> &amp; Diagnosis</h1>
+       <p id="hero-description" class="text-lg text-slate-600 leading-relaxed animate-slide-up delay-200">Harness the power of advanced machine learning algorithms to predict diseases early, analyze medical data with precision, and provide personalized healthcare insights for both doctors and patients.</p><!-- Auth Buttons -->
+       <div class="space-y-4 animate-slide-up delay-300">
+        <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider">For Healthcare Professionals</p>
+        <div class="flex flex-wrap gap-4">
+         <a href="/login?role=doctor" class="btn-primary text-white px-8 py-3.5 rounded-xl font-semibold flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          <span>Login as Doctor</span>
+         </a>
+         <a href="/doctor-register" class="btn-outline text-sky-600 px-8 py-3.5 rounded-xl font-semibold flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+          </svg>
+          <span>Register as Doctor</span>
+         </a>
+        </div>
+       </div>
+       <div class="space-y-4 animate-slide-up delay-400">
+        <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider">For Patients</p>
+        <div class="flex flex-wrap gap-4">
+         <a href="/login?role=patient" class="btn-secondary text-white px-8 py-3.5 rounded-xl font-semibold flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+          <span>Login as Patient</span>
+         </a>
+         <a href="/patient-register" class="btn-outline-teal text-teal-600 px-8 py-3.5 rounded-xl font-semibold flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>Register as Patient</span>
+         </a>
+        </div>
+       </div><!-- Trust Indicators -->
+       <div class="flex items-center gap-8 pt-4 animate-fade-in delay-400">
+        <div class="flex items-center gap-2">
+         <svg class="w-5 h-5 text-teal-500" fill="currentColor" viewbox="0 0 20 20"><path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+         </svg><span class="text-sm text-slate-600 font-medium">HIPAA Compliant</span>
+        </div>
+        <div class="flex items-center gap-2">
+         <svg class="w-5 h-5 text-teal-500" fill="currentColor" viewbox="0 0 20 20"><path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+         </svg><span class="text-sm text-slate-600 font-medium">FDA Approved AI</span>
+        </div>
+       </div>
+      </div><!-- Right Illustration -->
+      <div class="relative hidden lg:block">
+       <div class="relative animate-float"><!-- Main Card -->
+        <div class="glass-card rounded-3xl p-8 shadow-2xl shadow-sky-200/50"><!-- AI Brain Visualization -->
+         <div class="relative w-full aspect-square">
+          <svg class="w-full h-full" viewbox="0 0 400 400"><!-- Outer Ring --> <circle cx="200" cy="200" r="180" fill="none" stroke="url(#gradient1)" stroke-width="2" opacity="0.3" /> <circle cx="200" cy="200" r="160" fill="none" stroke="url(#gradient1)" stroke-width="1" opacity="0.2" /> <!-- Pulse Rings --> <circle cx="200" cy="200" r="140" fill="none" stroke="#0ea5e9" stroke-width="2" class="animate-pulse-ring" /> <!-- Brain Outline --> <g transform="translate(100, 100)">
+            <path d="M100 20 C60 20 30 50 30 90 C30 110 40 130 50 140 C40 150 35 165 40 180 C45 195 60 200 75 195 C80 210 95 220 115 220 C130 220 145 215 155 200 C170 205 185 195 190 180 C200 185 210 175 210 160 C220 155 225 140 220 125 C230 115 235 95 225 75 C215 55 190 40 165 40 C150 25 125 20 100 20" fill="none" stroke="url(#gradient1)" stroke-width="3" /> <!-- Neural Connections -->
+            <circle cx="70" cy="80" r="8" fill="#0ea5e9" />
+            <circle cx="130" cy="60" r="6" fill="#0d9488" />
+            <circle cx="160" cy="100" r="7" fill="#0ea5e9" />
+            <circle cx="140" cy="150" r="8" fill="#0d9488" />
+            <circle cx="80" cy="140" r="6" fill="#0ea5e9" />
+            <circle cx="100" cy="100" r="10" fill="#0284c7" /> <!-- Connection Lines -->
+            <line x1="70" y1="80" x2="100" y2="100" stroke="#0ea5e9" stroke-width="1.5" opacity="0.6" />
+            <line x1="130" y1="60" x2="100" y2="100" stroke="#0d9488" stroke-width="1.5" opacity="0.6" />
+            <line x1="160" y1="100" x2="100" y2="100" stroke="#0ea5e9" stroke-width="1.5" opacity="0.6" />
+            <line x1="140" y1="150" x2="100" y2="100" stroke="#0d9488" stroke-width="1.5" opacity="0.6" />
+            <line x1="80" y1="140" x2="100" y2="100" stroke="#0ea5e9" stroke-width="1.5" opacity="0.6" />
+           </g> <!-- Data Points --> <g class="animate-pulse">
+            <circle cx="80" cy="200" r="4" fill="#0d9488" />
+            <circle cx="320" cy="200" r="4" fill="#0d9488" />
+            <circle cx="200" cy="80" r="4" fill="#0ea5e9" />
+            <circle cx="200" cy="320" r="4" fill="#0ea5e9" />
+           </g> <defs>
+            <lineargradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+             <stop offset="0%" style="stop-color:#0ea5e9" />
+             <stop offset="100%" style="stop-color:#0d9488" />
+            </lineargradient>
+           </defs>
+          </svg>
+         </div><!-- Stats -->
+         <div class="grid grid-cols-3 gap-4 mt-6">
+          <div class="text-center p-3 bg-sky-50 rounded-xl">
+           <p class="text-2xl font-bold text-sky-600">98.5%</p>
+           <p class="text-xs text-slate-500 font-medium">Accuracy</p>
+          </div>
+          <div class="text-center p-3 bg-teal-50 rounded-xl">
+           <p class="text-2xl font-bold text-teal-600">50K+</p>
+           <p class="text-xs text-slate-500 font-medium">Diagnoses</p>
+          </div>
+          <div class="text-center p-3 bg-sky-50 rounded-xl">
+           <p class="text-2xl font-bold text-sky-600">24/7</p>
+           <p class="text-xs text-slate-500 font-medium">Available</p>
+          </div>
+         </div>
+        </div><!-- Floating Mini Cards -->
+        <div class="absolute -top-4 -left-4 glass-card rounded-xl p-3 shadow-lg animate-float-delayed">
+         <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-teal-100 rounded-lg flex items-center justify-center">
+           <svg class="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+           </svg>
+          </div><span class="text-sm font-semibold text-slate-700">Early Detection</span>
+         </div>
+        </div>
+        <div class="absolute -bottom-4 -right-4 glass-card rounded-xl p-3 shadow-lg animate-float">
+         <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-sky-100 rounded-lg flex items-center justify-center">
+           <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+           </svg>
+          </div><span class="text-sm font-semibold text-slate-700">Instant Results</span>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div><!-- How It Works Section -->
+     <section id="how-it-works" class="mt-24">
+      <div class="text-center mb-12">
+       <h2 class="text-3xl font-bold text-slate-800 mb-4">How MediScope Works</h2>
+       <p class="text-slate-600 max-w-3xl mx-auto">
+        MediScope connects patients and doctors around a shared AI risk score. Patients enter their vital signs,
+        our model estimates their current health risk, and doctors get a clear view of who needs attention first.
+       </p>
+      </div>
+      <div class="grid md:grid-cols-4 gap-6">
+       <div class="glass-card rounded-2xl p-6 feature-card text-center">
+        <div class="w-10 h-10 mx-auto mb-3 rounded-full bg-sky-100 flex items-center justify-center">
+         <span class="text-sky-600 font-bold text-sm">1</span>
+        </div>
+        <h3 class="text-sm font-semibold text-slate-800 mb-2">Create your account</h3>
+        <p class="text-xs text-slate-600">
+         Patients and doctors register with basic information and a secure password. All credentials are stored using
+         strong hashing, never in plain text.
+        </p>
+       </div>
+       <div class="glass-card rounded-2xl p-6 feature-card text-center">
+        <div class="w-10 h-10 mx-auto mb-3 rounded-full bg-sky-100 flex items-center justify-center">
+         <span class="text-sky-600 font-bold text-sm">2</span>
+        </div>
+        <h3 class="text-sm font-semibold text-slate-800 mb-2">Enter real-time vitals</h3>
+        <p class="text-xs text-slate-600">
+         Patients log in and enter blood pressure, heart rate, temperature, oxygen saturation, medication adherence,
+         and symptom severity through a guided form.
+        </p>
+       </div>
+       <div class="glass-card rounded-2xl p-6 feature-card text-center">
+        <div class="w-10 h-10 mx-auto mb-3 rounded-full bg-sky-100 flex items-center justify-center">
+         <span class="text-sky-600 font-bold text-sm">3</span>
+        </div>
+        <h3 class="text-sm font-semibold text-slate-800 mb-2">AI risk prediction</h3>
+        <p class="text-xs text-slate-600">
+         A trained machine‑learning model analyzes the vitals, produces a risk level (low / high), confidence score,
+         and suggests an appropriate specialist.
+        </p>
+       </div>
+       <div class="glass-card rounded-2xl p-6 feature-card text-center">
+        <div class="w-10 h-10 mx-auto mb-3 rounded-full bg-sky-100 flex items-center justify-center">
+         <span class="text-sky-600 font-bold text-sm">4</span>
+        </div>
+        <h3 class="text-sm font-semibold text-slate-800 mb-2">Doctor dashboard & follow-up</h3>
+        <p class="text-xs text-slate-600">
+         Doctors see all patients in a dashboard, sorted by risk, with recent assessments and suggested actions so they
+         can prioritize who to contact or schedule next.
+        </p>
+       </div>
+      </div>
+     </section><!-- Features Section -->
+     <div id="features" class="mt-24">
+      <div class="text-center mb-16">
+       <h2 class="text-3xl font-bold text-slate-800 mb-4">Powered by Advanced AI</h2>
+       <p class="text-slate-600 max-w-2xl mx-auto">Our platform leverages cutting-edge machine learning models trained on millions of medical records</p>
+      </div>
+      <div class="grid md:grid-cols-3 gap-8">
+       <div class="feature-card glass-card rounded-2xl p-8 text-center">
+        <div class="w-16 h-16 bg-gradient-to-br from-sky-500 to-sky-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-sky-200">
+         <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+         </svg>
+        </div>
+        <h3 id="feature1-title" class="text-xl font-bold text-slate-800 mb-3">Smart Diagnosis</h3>
+        <p class="text-slate-600">AI-assisted diagnosis with comprehensive symptom analysis and medical history evaluation</p>
+       </div>
+       <div class="feature-card glass-card rounded-2xl p-8 text-center">
+        <div class="w-16 h-16 bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-teal-200">
+         <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+         </svg>
+        </div>
+        <h3 id="feature2-title" class="text-xl font-bold text-slate-800 mb-3">Predictive Analytics</h3>
+        <p class="text-slate-600">Advanced algorithms predict health risks and recommend preventive measures before symptoms appear</p>
+       </div>
+       <div class="feature-card glass-card rounded-2xl p-8 text-center">
+        <div class="w-16 h-16 bg-gradient-to-br from-sky-500 to-teal-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-sky-200">
+         <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+         </svg>
+        </div>
+        <h3 id="feature3-title" class="text-xl font-bold text-slate-800 mb-3">Secure Records</h3>
+        <p class="text-slate-600">Bank-level encryption protects all patient data with HIPAA-compliant security protocols</p>
+       </div>
+      </div>
+     </div>
+    </div>
+    <!-- About & Contact Sections -->
+    <section id="about" class="mt-24 max-w-7xl mx-auto px-6 pb-12">
+     <div class="glass-card rounded-3xl px-8 py-10 shadow-xl shadow-sky-100/70">
+      <h2 class="text-3xl font-bold text-slate-800 mb-4">About MediScope</h2>
+      <p class="text-slate-600 leading-relaxed mb-4">
+       MediScope is a prototype clinical decision‑support tool built with Flask, SQLite and a machine‑learning model
+       trained on structured health data. The goal is to help healthcare teams spot high‑risk patients early using
+       objective vital‑sign measurements, not to replace doctors.
+      </p>
+      <p class="text-slate-600 leading-relaxed mb-4">
+       Patients get an easy‑to‑understand summary of their current risk level and a suggested specialist. Doctors see
+       a dashboard of all registered patients with recent assessments, so they can quickly identify who may need a
+       follow‑up call, medication adjustment or in‑person visit.
+      </p>
+      <p class="text-slate-600 leading-relaxed text-sm">
+       This project focuses on secure authentication, clear UX for non‑technical users, and transparent AI feedback to
+       support safer real‑world deployment in the future.
+      </p>
+     </div>
+    </section>
+    <section id="contact" class="pb-20 max-w-7xl mx-auto px-6">
+     <div class="grid md:grid-cols-2 gap-8">
+      <div class="glass-card rounded-3xl px-8 py-8 shadow-xl shadow-sky-100/70">
+       <h2 class="text-2xl font-bold text-slate-800 mb-3">Contact & Feedback</h2>
+       <p class="text-slate-600 text-sm mb-4">
+        This is an academic / demo project. If you have suggestions, notice issues, or would like to extend MediScope,
+        you can reach out to the project owner during the presentation or by email.
+       </p>
+       <ul class="text-slate-600 text-sm space-y-2">
+        <li><span class="font-semibold">For panel members:</span> ask to see the doctor and patient flows, and the AI explanation examples.</li>
+        <li><span class="font-semibold">For future work:</span> we plan to integrate more vitals, lab results, and richer model explanations.</li>
+       </ul>
+      </div>
+      <div class="glass-card rounded-3xl px-8 py-8 shadow-xl shadow-sky-100/70">
+       <h3 class="text-lg font-bold text-slate-800 mb-3">Project at a Glance</h3>
+       <ul class="text-slate-600 text-sm space-y-2 list-disc list-inside">
+        <li>Built with Flask, SQLite, SQLAlchemy and a scikit‑learn model.</li>
+        <li>Separate patient and doctor roles with secure, hashed passwords.</li>
+        <li>AI generates risk level, confidence and a natural‑language summary.</li>
+        <li>Doctors see per‑patient history to support longitudinal care.</li>
+       </ul>
+      </div>
+     </div>
+    </section>
+   </main><!-- Footer -->
+   <footer class="relative z-10 border-t border-sky-100 bg-white/50 backdrop-blur-sm">
+    <div class="max-w-7xl mx-auto px-6 py-8">
+     <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+       <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center">
+        <svg class="w-4 h-4 text-white" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+        </svg>
+
+       </div><span class="font-bold text-slate-700">MediScope</span>
+      </div>
+      <p class="text-sm text-slate-500">© 2024 MediScope Healthcare. All rights reserved.</p>
+      <div class="flex items-center gap-6"><a href="#" class="text-sm text-slate-500 hover:text-sky-600 transition-colors">Privacy Policy</a> <a href="#" class="text-sm text-slate-500 hover:text-sky-600 transition-colors">Terms of Service</a>
+      </div>
+     </div>
+    </div>
+   </footer>
+  </div>
+  <script>
+    const defaultConfig = {
+      hero_title: "AI-Powered Disease Prediction & Diagnosis",
+      hero_subtitle: "Next-Gen Healthcare Technology",
+      hero_description: "Harness the power of advanced machine learning algorithms to predict diseases early, analyze medical data with precision, and provide personalized healthcare insights for both doctors and patients.",
+      feature1_title: "Smart Diagnosis",
+      feature2_title: "Predictive Analytics",
+      feature3_title: "Secure Records",
+      background_color: "#f0f9ff",
+      surface_color: "#ffffff",
+      text_color: "#1e293b",
+      primary_color: "#0ea5e9",
+      secondary_color: "#0d9488",
+      font_family: "Plus Jakarta Sans",
+      font_size: 16
+    };
+
+    async function onConfigChange(config) {
+      // Update hero content
+      const heroTitle = document.getElementById('hero-title');
+      const heroSubtitle = document.getElementById('hero-subtitle');
+      const heroDescription = document.getElementById('hero-description');
+      
+      if (heroTitle) heroTitle.innerHTML = (config.hero_title || defaultConfig.hero_title).replace('Disease Prediction', '<span class="gradient-text">Disease Prediction</span>');
+      if (heroSubtitle) heroSubtitle.textContent = config.hero_subtitle || defaultConfig.hero_subtitle;
+      if (heroDescription) heroDescription.textContent = config.hero_description || defaultConfig.hero_description;
+      
+      // Update feature titles
+      const feature1 = document.getElementById('feature1-title');
+      const feature2 = document.getElementById('feature2-title');
+      const feature3 = document.getElementById('feature3-title');
+      
+      if (feature1) feature1.textContent = config.feature1_title || defaultConfig.feature1_title;
+      if (feature2) feature2.textContent = config.feature2_title || defaultConfig.feature2_title;
+      if (feature3) feature3.textContent = config.feature3_title || defaultConfig.feature3_title;
+      
+      // Apply colors
+      const bgColor = config.background_color || defaultConfig.background_color;
+      const surfaceColor = config.surface_color || defaultConfig.surface_color;
+      const textColor = config.text_color || defaultConfig.text_color;
+      const primaryColor = config.primary_color || defaultConfig.primary_color;
+      const secondaryColor = config.secondary_color || defaultConfig.secondary_color;
+      
+      // Update CSS custom properties for dynamic theming
+      document.documentElement.style.setProperty('--bg-color', bgColor);
+      document.documentElement.style.setProperty('--surface-color', surfaceColor);
+      document.documentElement.style.setProperty('--text-color', textColor);
+      document.documentElement.style.setProperty('--primary-color', primaryColor);
+      document.documentElement.style.setProperty('--secondary-color', secondaryColor);
+      
+      // Apply background color
+      const bgElements = document.querySelectorAll('.medical-grid');
+      bgElements.forEach(el => {
+        el.style.background = `linear-gradient(180deg, ${bgColor} 0%, ${adjustColor(bgColor, -10)} 50%, ${bgColor} 100%)`;
+      });
+      
+      // Apply surface color to glass cards
+      const glassCards = document.querySelectorAll('.glass-card');
+      glassCards.forEach(el => {
+        el.style.backgroundColor = hexToRgba(surfaceColor, 0.9);
+      });
+      
+      // Apply text color
+      document.querySelectorAll('h1:not(.gradient-text), h2, h3, p, span').forEach(el => {
+        if (!el.classList.contains('gradient-text') && !el.closest('.btn-primary') && !el.closest('.btn-secondary')) {
+          // el.style.color = textColor;
+        }
+      });
+      
+      // Apply primary color to buttons
+      document.querySelectorAll('.btn-primary').forEach(el => {
+        el.style.background = `linear-gradient(135deg, ${primaryColor} 0%, ${adjustColor(primaryColor, -20)} 100%)`;
+      });
+      
+      document.querySelectorAll('.btn-outline').forEach(el => {
+        el.style.borderColor = primaryColor;
+        el.style.color = primaryColor;
+      });
+      
+      // Apply secondary color
+      document.querySelectorAll('.btn-secondary').forEach(el => {
+        el.style.background = `linear-gradient(135deg, ${adjustColor(secondaryColor, -10)} 0%, ${secondaryColor} 100%)`;
+      });
+      
+      document.querySelectorAll('.btn-outline-teal').forEach(el => {
+        el.style.borderColor = secondaryColor;
+        el.style.color = secondaryColor;
+      });
+      
+      // Apply font
+      const fontFamily = config.font_family || defaultConfig.font_family;
+      document.body.style.fontFamily = `'${fontFamily}', sans-serif`;
+      
+      // Apply font size
+      const fontSize = config.font_size || defaultConfig.font_size;
+      document.getElementById('hero-title').style.fontSize = `${fontSize * 3}px`;
+      document.getElementById('hero-description').style.fontSize = `${fontSize}px`;
+    }
+    
+    function hexToRgba(hex, alpha) {
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+    
+    function adjustColor(hex, amount) {
+      const num = parseInt(hex.slice(1), 16);
+      const r = Math.min(255, Math.max(0, (num >> 16) + amount));
+      const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
+      const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
+      return `#${(1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1)}`;
+    }
+    
+    function mapToCapabilities(config) {
+      return {
+        recolorables: [
+          {
+            get: () => config.background_color || defaultConfig.background_color,
+            set: (value) => { config.background_color = value; window.elementSdk.setConfig({ background_color: value }); }
+          },
+          {
+            get: () => config.surface_color || defaultConfig.surface_color,
+            set: (value) => { config.surface_color = value; window.elementSdk.setConfig({ surface_color: value }); }
+          },
+          {
+            get: () => config.text_color || defaultConfig.text_color,
+            set: (value) => { config.text_color = value; window.elementSdk.setConfig({ text_color: value }); }
+          },
+          {
+            get: () => config.primary_color || defaultConfig.primary_color,
+            set: (value) => { config.primary_color = value; window.elementSdk.setConfig({ primary_color: value }); }
+          },
+          {
+            get: () => config.secondary_color || defaultConfig.secondary_color,
+            set: (value) => { config.secondary_color = value; window.elementSdk.setConfig({ secondary_color: value }); }
+          }
+        ],
+        borderables: [],
+        fontEditable: {
+          get: () => config.font_family || defaultConfig.font_family,
+          set: (value) => { config.font_family = value; window.elementSdk.setConfig({ font_family: value }); }
+        },
+        fontSizeable: {
+          get: () => config.font_size || defaultConfig.font_size,
+          set: (value) => { config.font_size = value; window.elementSdk.setConfig({ font_size: value }); }
+        }
+      };
+    }
+    
+    function mapToEditPanelValues(config) {
+      return new Map([
+        ["hero_title", config.hero_title || defaultConfig.hero_title],
+        ["hero_subtitle", config.hero_subtitle || defaultConfig.hero_subtitle],
+        ["hero_description", config.hero_description || defaultConfig.hero_description],
+        ["feature1_title", config.feature1_title || defaultConfig.feature1_title],
+        ["feature2_title", config.feature2_title || defaultConfig.feature2_title],
+        ["feature3_title", config.feature3_title || defaultConfig.feature3_title]
+      ]);
+    }
+    
+    // Initialize SDK
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities,
+        mapToEditPanelValues
+      });
+    }
+  </script>
+</html>
