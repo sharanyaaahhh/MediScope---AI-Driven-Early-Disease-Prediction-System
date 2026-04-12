@@ -51,7 +51,10 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 CORS(app, supports_credentials=True)
 
 # File Upload configuration
-UPLOAD_FOLDER = 'uploads/medical_reports'
+if os.environ.get("VERCEL"):
+    UPLOAD_FOLDER = '/tmp/uploads/medical_reports'
+else:
+    UPLOAD_FOLDER = 'uploads/medical_reports'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg'}

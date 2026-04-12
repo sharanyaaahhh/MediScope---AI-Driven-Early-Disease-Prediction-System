@@ -7,7 +7,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from utils.security import encrypt_data, decrypt_data
 
 # SQLite database setup (can be overridden via environment variable)
-DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///mediscope.db")
+if os.environ.get("VERCEL"):
+    default_db = "sqlite:////tmp/mediscope.db"
+else:
+    default_db = "sqlite:///mediscope.db"
+DATABASE_URL = os.environ.get("DATABASE_URL", default_db)
 engine = create_engine(DATABASE_URL, echo=False)
 metadata = MetaData()
 
