@@ -360,13 +360,19 @@ def toggle_2fa():
 
 @app.route("/logout", methods=["GET", "POST"])
 def logout():
+    # Capture role before clearing session so we can route back correctly.
+    role = session.get("role")
     session.clear()
+
+    redirect_target = "/login"
+    if role in ("doctor", "patient"):
+        redirect_target = f"/login?role={role}"
 
     if request.method == "GET":
         flash("You have been logged out successfully.", "success")
-        return redirect("/login")
+        return redirect(redirect_target)
 
-    return jsonify({"success": True, "message": "Logged out", "redirect": "/login"})
+    return jsonify({"success": True, "message": "Logged out", "redirect": redirect_target})
 
 
 # ==============================
